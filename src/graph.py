@@ -1,0 +1,47 @@
+"""Graph: stores zones and connections as adjacency list."""
+from __future__ import annotations
+from src.models import Zone, Connection
+
+
+class Graph:
+    """Simple graph with adjacency list."""
+
+    def __init__(self) -> None:
+        """Initialize empty graph."""
+        self.zones: dict[str, Zone] = {}
+        self.adjacency: dict[str, list[str]] = {}
+        self.connections: dict[tuple[str, str], Connection] = {}
+        self.start: str = ""
+        self.end: str = ""
+        self.nb_drones: int = 0
+
+    def add_zone(self, zone: Zone) -> None:
+        """Add a zone to the graph."""
+        self.zones[zone.name] = zone
+        if zone.name not in self.adjacency:
+            self.adjacency[zone.name] = []
+        if zone.is_start:
+            self.start = zone.name
+        if zone.is_end:
+            self.end = zone.name
+
+    def add_connection(self, conn: Connection) -> None:
+        """Add a connection (bidirectional edge)."""
+        self.connections[conn.key()] = conn
+        if conn.zone2 not in self.adjacency[conn.zone1]:
+            self.adjacency[conn.zone1].append(conn.zone2)
+        if conn.zone1 not in self.adjacency[conn.zone2]:
+            self.adjacency[conn.zone2].append(conn.zone1)
+
+    def get_neighbors(self, zone_name: str) -> list[str]:
+        """Get all neighbors of a zone."""
+        return self.adjacency.get(zone_name, [])
+
+    def get_connection(self, z1: str, z2: str) -> Connection:
+        """Get connection between two zones."""
+        key = (z1, z2) if z1 < z2 else (z2, z1)
+        return self.connections[key]
+
+    def get_zone(self, name: str) -> Zone:
+        """Get a zone by name."""
+        return self.zones[name]
