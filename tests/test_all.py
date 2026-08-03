@@ -217,6 +217,25 @@ check("Connection to unknown zone raises error", "Unknown zone" in err, err)
 err = expect_parser_error("nb_drones: 1\nstart_hub: my-zone 0 0\nend_hub: B 1 0\nconnection: my-zone-B", "")
 check("Zone name with dash raises error", "cannot contain dashes" in err or "Unknown zone" in err, err)
 
+# Flexible colon spacing
+graph = parse_string("""
+nb_drones : 1
+start_hub : A 0 0
+hub : B 1 0
+end_hub : C 2 0
+connection : A-B
+connection : B-C
+""")
+check("Flexible spacing around prefix colon is accepted", graph.nb_drones == 1 and "B" in graph.zones)
+
+# Duplicate metadata attribute
+err = expect_parser_error("nb_drones: 1\nstart_hub: A 0 0 [color=green color=red]\nend_hub: B 1 0\nconnection: A-B", "")
+check("Duplicate metadata attribute raises error", "Duplicate metadata attribute" in err, err)
+
+# Duplicate coordinates
+err = expect_parser_error("nb_drones: 1\nstart_hub: A 0 0\nhub: B 0 0\nend_hub: C 1 0\nconnection: A-B\nconnection: B-C", "")
+check("Duplicate coordinates raise error", "Duplicate coordinates" in err, err)
+
 # Missing file
 try:
     Parser().parse("/tmp/does_not_exist_flyin.txt")

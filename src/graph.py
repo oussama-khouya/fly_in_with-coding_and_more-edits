@@ -35,6 +35,7 @@ class Graph:
 
     def get_neighbors(self, zone_name: str) -> list[str]:
         """Get all neighbors of a zone."""
+        # we get the neighbor zones of that zone, if the zone is not in the adjacency list, we return an empty list
         return self.adjacency.get(zone_name, [])
 
     def get_connection(self, z1: str, z2: str) -> Connection:

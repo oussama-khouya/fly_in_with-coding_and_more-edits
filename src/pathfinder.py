@@ -6,14 +6,14 @@ from src.models import SimulationError
 
 
 class Pathfinder:
-    """Finds paths using Dijkstra. Handles zone costs correctly."""
+    """Finds paths using Dijkstra. Handles zone costs and priority zones correctly."""
 
-    def find_paths(self, graph: Graph, num_paths: int) -> list[list[str]]:
+    def find_paths(self, graph: Graph, num_drones: int) -> list[list[str]]:
         """Find multiple paths from start to end using Dijkstra with edge penalization."""
         paths: list[list[str]] = []
         edge_usage: dict[tuple[str, str], int] = {}
 
-        for _ in range(num_paths):
+        for _ in range(num_drones):
             path = self._dijkstra(graph, edge_usage)
             if path is None:
                 break
@@ -27,7 +27,7 @@ class Pathfinder:
             raise SimulationError(f"Error: No valid path from '{graph.start}' to '{graph.end}'")
 
         return paths
-
+ 
     def _dijkstra(self, graph: Graph, edge_usage: dict[tuple[str, str], int]) -> list[str] | None:
         """Dijkstra from start to end. Considers zone costs, prefers priority zones, skips blocked."""
         start = graph.start
@@ -56,25 +56,27 @@ class Pathfinder:
                 return path
 
             for neighbor in graph.get_neighbors(current):
-                zone = graph.get_zone(neighbor)
+                zone = graph.get_zone(neighbor) # we start with A
 
                 # Skip blocked zones
                 if zone.zone_type == "blocked":
                     continue
 
-                # Zone cost: restricted = 2, everything else = 1
-                move_cost = 2 if zone.zone_type == "restricted" else 1
+                # Move cost: priority=5, normal=10, restricted=20
+                if zone.zone_type == "restricted":
+                    move_cost = 20
+                elif zone.zone_type == "priority":
+                    move_cost = 5
+                else:
+                    move_cost = 10
 
-                # Penalize reused edges so we find different paths
+                # Penalize reused paths so we find different paths for every drone
                 edge_key = (current, neighbor) if current < neighbor else (neighbor, current)
-                penalty = edge_usage.get(edge_key, 0) * 10
+                penalty = edge_usage.get(edge_key, 0) * 100
 
-                # Bonus for priority zones (small negative to prefer them)
-                bonus = -1 if zone.zone_type == "priority" else 0
+                new_cost = cost + move_cost + penalty
 
-                new_cost = cost + move_cost + penalty + bonus
-
-                if new_cost < best_cost.get(neighbor, float("inf")):
+                if new_cost < best_cost.get(neighbor, float("inf")): # why we do that check is it for reached zones that we should not go back to them because they are already reached and we have a better cost for them or what
                     best_cost[neighbor] = new_cost
                     parent[neighbor] = current
                     heapq.heappush(heap, (new_cost, neighbor))
