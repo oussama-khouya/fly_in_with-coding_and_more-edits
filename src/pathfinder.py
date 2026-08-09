@@ -11,24 +11,25 @@ class Pathfinder:
     def find_paths(self, graph: Graph, num_drones: int) -> list[list[str]]:
         """Find multiple paths from start to end using Dijkstra with edge penalization."""
         paths: list[list[str]] = []
-        edge_usage: dict[tuple[str, str], int] = {}
+        count_cnx_used: dict[tuple[str, str], int] = {}
 
         for _ in range(num_drones):
-            path = self._dijkstra(graph, edge_usage)
+            path = self._dijkstra(graph, count_cnx_used)
             if path is None:
                 break
             paths.append(path)
-            # Mark edges as used so next search tries different route
+            # Mark connection as used so next search tries different route
+            # explain what does this loop do and why we do that with examples like why len(path) - 1)
             for i in range(len(path) - 1):
-                key = (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i])
-                edge_usage[key] = edge_usage.get(key, 0) + 1
+                connection_tuple = (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i])
+                count_cnx_used[connection_tuple] = count_cnx_used.get(connection_tuple, 0) + 1
 
         if not paths:
             raise SimulationError(f"Error: No valid path from '{graph.start}' to '{graph.end}'")
 
         return paths
  
-    def _dijkstra(self, graph: Graph, edge_usage: dict[tuple[str, str], int]) -> list[str] | None:
+    def _dijkstra(self, graph: Graph, count_cnx_used: dict[tuple[str, str], int]) -> list[str] | None:
         """Dijkstra from start to end. Considers zone costs, prefers priority zones, skips blocked."""
         start = graph.start
         end = graph.end
@@ -71,10 +72,11 @@ class Pathfinder:
                     move_cost = 10
 
                 # Penalize reused paths so we find different paths for every drone
-                edge_key = (current, neighbor) if current < neighbor else (neighbor, current)
-                penalty = edge_usage.get(edge_key, 0) * 100
+                # why we use that (current, neighbor) if current < neighbor else (neighbor, current)
+                connection_tuple = (current, neighbor) if current < neighbor else (neighbor, current)
+                penalty = count_cnx_used.get(connection_tuple, 0) * 100
 
-                new_cost = cost + move_cost + penalty
+                new_cost = cost + move_cost + penalty #new_cost = 100
 
                 if new_cost < best_cost.get(neighbor, float("inf")): # why we do that check is it for reached zones that we should not go back to them because they are already reached and we have a better cost for them or what
                     best_cost[neighbor] = new_cost

@@ -52,6 +52,6 @@ class Drone:
     path: list[str] = field(default_factory=list)
     position: str = ""
     path_index: int = 0
-    in_transit: bool = False
-    transit_dest: str = ""
+    in_traveling: bool = False
+    travel_dest: str = ""
     delivered: bool = False
