@@ -6,10 +6,13 @@ from src.models import SimulationError
 
 
 class Pathfinder:
-    """Finds paths using Dijkstra. Handles zone costs and priority zones correctly."""
+    """Finds paths using Dijkstra.
+
+    Handles zone costs and priority zones correctly.
+    """
 
     def find_paths(self, graph: Graph, num_drones: int) -> list[list[str]]:
-        """Find multiple paths from start to end using Dijkstra with edge penalization."""
+        """Find paths using Dijkstra with edge penalization."""
         paths: list[list[str]] = []
         count_cnx_used: dict[tuple[str, str], int] = {}
 
@@ -19,18 +22,29 @@ class Pathfinder:
                 break
             paths.append(path)
             # Mark connection as used so next search tries different route
-            # len(path) - 1 cause we do i + 1 adn i starts at 0 so we go beyound the path index 
+            # len(path) - 1 cause we do i + 1 adn i starts at 0 so we go
+            # beyound the path index
             for i in range(len(path) - 1):
-                connection_tuple = (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i])
-                count_cnx_used[connection_tuple] = count_cnx_used.get(connection_tuple, 0) + 1
+                z1, z2 = path[i], path[i + 1]
+                connection_tuple = (z1, z2) if z1 < z2 else (z2, z1)
+                count_cnx_used[connection_tuple] = (
+                    count_cnx_used.get(connection_tuple, 0) + 1
+                )
 
         if not paths:
-            raise SimulationError(f"Error: No valid path from '{graph.start}' to '{graph.end}'")
+            err_msg = (f"Error: No valid path from '{graph.start}' "
+                       f"to '{graph.end}'")
+            raise SimulationError(err_msg)
 
         return paths
- 
-    def _dijkstra(self, graph: Graph, count_cnx_used: dict[tuple[str, str], int]) -> list[str] | None:
-        """Dijkstra from start to end. Considers zone costs, prefers priority zones, skips blocked."""
+
+    def _dijkstra(
+        self, graph: Graph, count_cnx_used: dict[tuple[str, str], int]
+    ) -> list[str] | None:
+        """Dijkstra from start to end.
+
+        Considers zone costs, prefers priority zones, skips blocked.
+        """
         start = graph.start
         end = graph.end
 
@@ -57,7 +71,7 @@ class Pathfinder:
                 return path
 
             for neighbor in graph.get_neighbors(current):
-                zone = graph.get_zone(neighbor) # we start with A
+                zone = graph.get_zone(neighbor)  # we start with A
 
                 # Skip blocked zones
                 if zone.zone_type == "blocked":
@@ -71,14 +85,20 @@ class Pathfinder:
                 else:
                     move_cost = 10
 
-                # Penalize reused paths so we find different paths for every drone
-                # why we use that (current, neighbor) if current < neighbor else (neighbor, current)
-                connection_tuple = (current, neighbor) if current < neighbor else (neighbor, current)
+                # Penalize reused paths so we find different paths for
+                # every drone
+                # why we use that (current, neighbor) if current < neighbor
+                # else (neighbor, current)
+                z1, z2 = current, neighbor
+                connection_tuple = (z1, z2) if z1 < z2 else (z2, z1)
                 penalty = count_cnx_used.get(connection_tuple, 0) * 100
 
-                new_cost = cost + move_cost + penalty #new_cost = 100
+                new_cost = cost + move_cost + penalty  # new_cost = 100
 
-                if new_cost < best_cost.get(neighbor, float("inf")): # why we do that check is it for reached zones that we should not go back to them because they are already reached and we have a better cost for them or what
+                # why we do that check is it for reached zones that we
+                # should not go back to them because they are already
+                # reached and we have a better cost for them or what
+                if new_cost < best_cost.get(neighbor, float("inf")):
                     best_cost[neighbor] = new_cost
                     parent[neighbor] = current
                     heapq.heappush(heap, (new_cost, neighbor))

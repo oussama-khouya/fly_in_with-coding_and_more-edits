@@ -12,7 +12,8 @@ from src.display import Display
 def main() -> None:
     """Main entry point. Usage: python3 main.py <map_file> [--capacity-info]"""
     if len(sys.argv) < 2:
-        print("Usage: python3 main.py <map_file> [--capacity-info]", file=sys.stderr)
+        msg = "Usage: python3 main.py <map_file> [--capacity-info]"
+        print(msg, file=sys.stderr)
         sys.exit(1)
 
     map_file = sys.argv[1]

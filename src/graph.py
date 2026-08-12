@@ -7,7 +7,10 @@ from src.models import Zone, Connection
 
 
 class Graph:
-    """Simple graph with adjacency list. adjacency is the connected zones to that zone"""
+    """Simple graph with adjacency list.
+
+    adjacency is the connected zones to that zone
+    """
 
     def __init__(self) -> None:
         """Initialize empty graph."""
@@ -17,9 +20,11 @@ class Graph:
         self.start: str = ""
         self.end: str = ""
         self.nb_drones: int = 0
-        
-    # we will build methodes to store data inside the graph and also get the data from that graph
-    # we add the zone name to the graph and also to the adjancency and start and end 
+
+    # we will build methodes to store data inside the graph and also get
+    # the data from that graph
+    # we add the zone name to the graph and also to the adjancency and
+    # start and end
     def add_zone(self, zone: Zone) -> None:
         """Add a zone to the graph."""
         self.zones[zone.name] = zone
@@ -42,7 +47,8 @@ class Graph:
     # get neighbors of a zone using adjacency
     def get_neighbors(self, zone_name: str) -> list[str]:
         """Get all neighbors of a zone."""
-        # we get the neighbor zones of that zone, if the zone is not in the adjacency list, we return an empty list
+        # we get the neighbor zones of that zone, if the zone is not in the
+        # adjacency list, we return an empty list
         return self.adjacency.get(zone_name, [])
 
     # get connection betweeen two zones

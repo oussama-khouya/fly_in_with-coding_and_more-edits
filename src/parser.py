@@ -1,4 +1,4 @@
-"""Parser: reads a map file and builds a Graph. to put the data inside the graph"""
+"""Parser: reads a map file and builds a Graph. to put the data inside the graph"""  # noqa: E501
 from __future__ import annotations
 from src.models import Zone, Connection, ParserError
 from src.graph import Graph
@@ -19,8 +19,9 @@ class Parser:
 
         try:
             with open(filepath, "r") as f:
-                # we read file lines and we return a list of line sep by new line
-                lines : list = f.readlines()
+                # we read file lines and we return a list of line sep by new
+                # line
+                lines: list[str] = f.readlines()
         except FileNotFoundError:
             raise ParserError(f"Error: File '{filepath}' not found")
 
@@ -31,7 +32,8 @@ class Parser:
                 continue
 
             if ":" not in line:
-                raise ParserError(f"Error on line {line_num}: Unknown line format")
+                err = f"Error on line {line_num}: Unknown line format"
+                raise ParserError(err)
 
             prefix, rest = line.split(":", 1)
             prefix = prefix.strip()
@@ -40,44 +42,59 @@ class Parser:
             try:
                 if prefix == "nb_drones":
                     if has_drones:
-                        raise ParserError(f"Error on line {line_num}: Duplicate nb_drones definition")
+                        err = (f"Error on line {line_num}: "
+                               f"Duplicate nb_drones definition")
+                        raise ParserError(err)
                     graph.nb_drones = self._parse_drone_count(rest, line_num)
                     has_drones = True
 
                 elif prefix == "start_hub":
                     if has_start:
-                        raise ParserError(f"Error on line {line_num}: Duplicate start_hub definition")
+                        err = (f"Error on line {line_num}: "
+                               f"Duplicate start_hub definition")
+                        raise ParserError(err)
                     zone = self._parse_zone(rest, line_num, is_start=True)
                     self._check_duplicate_zone(zone.name, graph, line_num)
-                    self._check_duplicate_coords(zone.x, zone.y, zone.name, seen_coords, line_num)
+                    self._check_duplicate_coords(
+                        zone.x, zone.y, zone.name, seen_coords, line_num
+                    )
                     graph.add_zone(zone)
                     has_start = True
 
                 elif prefix == "end_hub":
                     if has_end:
-                        raise ParserError(f"Error on line {line_num}: Duplicate end_hub definition")
+                        err = (f"Error on line {line_num}: "
+                               f"Duplicate end_hub definition")
+                        raise ParserError(err)
                     zone = self._parse_zone(rest, line_num, is_end=True)
                     self._check_duplicate_zone(zone.name, graph, line_num)
-                    self._check_duplicate_coords(zone.x, zone.y, zone.name, seen_coords, line_num)
+                    self._check_duplicate_coords(
+                        zone.x, zone.y, zone.name, seen_coords, line_num
+                    )
                     graph.add_zone(zone)
                     has_end = True
 
                 elif prefix == "hub":
                     zone = self._parse_zone(rest, line_num)
                     self._check_duplicate_zone(zone.name, graph, line_num)
-                    self._check_duplicate_coords(zone.x, zone.y, zone.name, seen_coords, line_num)
+                    self._check_duplicate_coords(
+                        zone.x, zone.y, zone.name, seen_coords, line_num
+                    )
                     graph.add_zone(zone)
 
                 elif prefix == "connection":
                     conn = self._parse_connection(rest, line_num, graph)
                     conn_key = conn.key()
                     if conn_key in seen_connections:
-                        raise ParserError(f"Error on line {line_num}: Duplicate connection '{conn.zone1}-{conn.zone2}'")
+                        err = (f"Error on line {line_num}: Duplicate "
+                               f"connection '{conn.zone1}-{conn.zone2}'")
+                        raise ParserError(err)
                     seen_connections.add(conn_key)
                     graph.add_connection(conn)
 
                 else:
-                    raise ParserError(f"Error on line {line_num}: Unknown line format")
+                    err = f"Error on line {line_num}: Unknown line format"
+                    raise ParserError(err)
 
             except ParserError:
                 raise
@@ -91,55 +108,70 @@ class Parser:
         if not has_end:
             raise ParserError("Error: Missing end_hub definition")
 
-        # it feeds / stores the data to the graph class 
+        # it feeds / stores the data to the graph class
         return graph
 
-
-
-
-    # helper methodes 
-    # parse the nb_drones count 
+    # helper methodes
+    # parse the nb_drones count
     def _parse_drone_count(self, content: str, line_num: int) -> int:
         """Parse drone count value."""
         try:
             count = int(content)
         except ValueError:
-            raise ParserError(f"Error on line {line_num}: nb_drones must be a positive integer")
+            err = (f"Error on line {line_num}: "
+                   f"nb_drones must be a positive integer")
+            raise ParserError(err)
         if count <= 0:
-            raise ParserError(f"Error on line {line_num}: nb_drones must be a positive integer")
+            err = (f"Error on line {line_num}: "
+                   f"nb_drones must be a positive integer")
+            raise ParserError(err)
         return count
 
-    def _parse_zone(self, content: str, line_num: int, is_start: bool = False, is_end: bool = False) -> Zone:
+    def _parse_zone(
+        self,
+        content: str,
+        line_num: int,
+        is_start: bool = False,
+        is_end: bool = False
+    ) -> Zone:
         """Parse a zone definition line content."""
         metadata_str = ""
         if "[" in content:
             bracket_start = content.index("[")
             if "]" not in content:
-                raise ParserError(f"Error on line {line_num}: Metadata block is not closed, missing ']'")
+                err = (f"Error on line {line_num}: "
+                       f"Metadata block is not closed, missing ']'")
+                raise ParserError(err)
             bracket_end = content.index("]")
             # here is the metadata str
             metadata_str = content[bracket_start + 1:bracket_end]
             # in case we put we add somth ouside the brackets
             trash = content[bracket_end + 1:].strip()
             if trash:
-                raise ParserError(f"Error on line {line_num}: Unexpected text after metadata: '{trash}'")
+                err = (f"Error on line {line_num}: "
+                       f"Unexpected text after metadata: '{trash}'")
+                raise ParserError(err)
             content = content[:bracket_start].strip()
 
         zocor = content.split()
         if len(zocor) < 3:
-            raise ParserError(f"Error on line {line_num}: Zone must have name, x, and y")
+            err = f"Error on line {line_num}: Zone must have name, x, and y"
+            raise ParserError(err)
 
         zone_name = zocor[0]
         if "-" in zone_name:
-            raise ParserError(f"Error on line {line_num}: Zone name cannot contain dashes")
+            err = (f"Error on line {line_num}: "
+                   f"Zone name cannot contain dashes")
+            raise ParserError(err)
 
         try:
             x = int(zocor[1])
             y = int(zocor[2])
         except ValueError:
-            raise ParserError(f"Error on line {line_num}: Coordinates must be integers")
-        
-        # we start with as default zone 
+            err = f"Error on line {line_num}: Coordinates must be integers"
+            raise ParserError(err)
+
+        # we start with as default zone
         zone_type = "normal"
         color = ""
         max_drones = 1
@@ -148,16 +180,24 @@ class Parser:
         if metadata_str:
             for attrib in metadata_str.split():
                 if "=" not in attrib:
-                    raise ParserError(f"Error on line {line_num}: Invalid metadata syntax '{attrib}'")
+                    err = (f"Error on line {line_num}: "
+                           f"Invalid metadata syntax '{attrib}'")
+                    raise ParserError(err)
                 key, value = attrib.split("=", 1)
                 # we check if that key is duplicated in seen_keys
                 if key in seen_keys:
-                    raise ParserError(f"Error on line {line_num}: Duplicate metadata attribute '{key}'")
+                    err = (f"Error on line {line_num}: "
+                           f"Duplicate metadata attribute '{key}'")
+                    raise ParserError(err)
                 seen_keys.add(key)
 
                 if key == "zone":
-                    if value not in {"normal", "restricted", "priority", "blocked"}:
-                        raise ParserError(f"Error on line {line_num}: Invalid zone type '{value}'")
+                    valid_types = {"normal", "restricted",
+                                   "priority", "blocked"}
+                    if value not in valid_types:
+                        err = (f"Error on line {line_num}: "
+                               f"Invalid zone type '{value}'")
+                        raise ParserError(err)
                     zone_type = value
                 elif key == "color":
                     color = value
@@ -165,42 +205,69 @@ class Parser:
                     try:
                         max_drones = int(value)
                     except ValueError:
-                        raise ParserError(f"Error on line {line_num}: max_drones must be a positive integer")
+                        err = (f"Error on line {line_num}: "
+                               f"max_drones must be a positive integer")
+                        raise ParserError(err)
                     if max_drones <= 0:
-                        raise ParserError(f"Error on line {line_num}: max_drones must be a positive integer")
+                        err = (f"Error on line {line_num}: "
+                               f"max_drones must be a positive integer")
+                        raise ParserError(err)
                 else:
-                    raise ParserError(f"Error on line {line_num}: Unknown metadata key '{key}'")
+                    err = (f"Error on line {line_num}: "
+                           f"Unknown metadata key '{key}'")
+                    raise ParserError(err)
 
         if is_start or is_end:
             max_drones = 999999
 
-        return Zone(name=zone_name, x=x, y=y, zone_type=zone_type, color=color, max_drones=max_drones, is_start=is_start, is_end=is_end)
+        return Zone(
+            name=zone_name,
+            x=x,
+            y=y,
+            zone_type=zone_type,
+            color=color,
+            max_drones=max_drones,
+            is_start=is_start,
+            is_end=is_end
+        )
 
-    def _parse_connection(self, content: str, line_num: int, graph: Graph) -> Connection:
+    def _parse_connection(
+        self, content: str, line_num: int, graph: Graph
+    ) -> Connection:
         """Parse connection definition line content."""
         metadata_str = ""
         if "[" in content:
             bracket_start = content.index("[")
             if "]" not in content:
-                raise ParserError(f"Error on line {line_num}: Metadata block is not closed, missing ']'")
+                err = (f"Error on line {line_num}: "
+                       f"Metadata block is not closed, missing ']'")
+                raise ParserError(err)
             bracket_end = content.index("]")
             metadata_str = content[bracket_start + 1:bracket_end]
             trailing = content[bracket_end + 1:].strip()
             if trailing:
-                raise ParserError(f"Error on line {line_num}: Unexpected text after metadata: '{trailing}'")
+                err = (f"Error on line {line_num}: "
+                       f"Unexpected text after metadata: '{trailing}'")
+                raise ParserError(err)
             content = content[:bracket_start].strip()
 
         parts = content.split("-")
         if len(parts) != 2:
-            raise ParserError(f"Error on line {line_num}: Connection must be 'zone1-zone2'")
+            err = (f"Error on line {line_num}: "
+                   f"Connection must be 'zone1-zone2'")
+            raise ParserError(err)
 
         zone1 = parts[0].strip()
         zone2 = parts[1].strip()
 
         if zone1 not in graph.zones:
-            raise ParserError(f"Error on line {line_num}: Unknown zone '{zone1}' in connection")
+            err = (f"Error on line {line_num}: "
+                   f"Unknown zone '{zone1}' in connection")
+            raise ParserError(err)
         if zone2 not in graph.zones:
-            raise ParserError(f"Error on line {line_num}: Unknown zone '{zone2}' in connection")
+            err = (f"Error on line {line_num}: "
+                   f"Unknown zone '{zone2}' in connection")
+            raise ParserError(err)
 
         # its one by default
         max_link_capacity = 1
@@ -210,33 +277,59 @@ class Parser:
         if metadata_str:
             for attrib in metadata_str.split():
                 if "=" not in attrib:
-                    raise ParserError(f"Error on line {line_num}: Invalid metadata syntax '{attrib}'")
+                    err = (f"Error on line {line_num}: "
+                           f"Invalid metadata syntax '{attrib}'")
+                    raise ParserError(err)
                 key, value = attrib.split("=", 1)
                 if key in seen_keys:
-                    raise ParserError(f"Error on line {line_num}: Duplicate metadata attribute '{key}'")
+                    err = (f"Error on line {line_num}: "
+                           f"Duplicate metadata attribute '{key}'")
+                    raise ParserError(err)
                 seen_keys.add(key)
 
                 if key == "max_link_capacity":
                     try:
                         max_link_capacity = int(value)
                     except ValueError:
-                        raise ParserError(f"Error on line {line_num}: max_link_capacity must be a positive integer")
+                        err = (f"Error on line {line_num}: "
+                               f"max_link_capacity must be a positive integer")
+                        raise ParserError(err)
                     if max_link_capacity <= 0:
-                        raise ParserError(f"Error on line {line_num}: max_link_capacity must be a positive integer")
+                        err = (f"Error on line {line_num}: "
+                               f"max_link_capacity must be a positive integer")
+                        raise ParserError(err)
                 else:
-                    raise ParserError(f"Error on line {line_num}: Unknown connection metadata key '{key}'")
+                    err = (f"Error on line {line_num}: "
+                           f"Unknown connection metadata key '{key}'")
+                    raise ParserError(err)
 
-        return Connection(zone1=zone1, zone2=zone2, max_link_capacity=max_link_capacity)
+        return Connection(
+            zone1=zone1,
+            zone2=zone2,
+            max_link_capacity=max_link_capacity
+        )
 
-    def _check_duplicate_zone(self, name: str, graph: Graph, line_num: int) -> None:
+    def _check_duplicate_zone(
+        self, name: str, graph: Graph, line_num: int
+    ) -> None:
         """Check if zone name already exists."""
         if name in graph.zones:
-            raise ParserError(f"Error on line {line_num}: Duplicate zone name '{name}'")
+            err = f"Error on line {line_num}: Duplicate zone name '{name}'"
+            raise ParserError(err)
 
-    def _check_duplicate_coords(self, x: int, y: int, zone_name: str, seen_coords: dict[tuple[int, int], str], line_num: int) -> None:
+    def _check_duplicate_coords(
+        self,
+        x: int,
+        y: int,
+        zone_name: str,
+        seen_coords: dict[tuple[int, int], str],
+        line_num: int
+    ) -> None:
         """Check if zone coordinates already exist."""
         coords = (x, y)
         if coords in seen_coords:
             existing = seen_coords[coords]
-            raise ParserError(f"Error on line {line_num}: Duplicate coordinates ({x}, {y}) already used by zone '{existing}'")
+            err = (f"Error on line {line_num}: Duplicate coordinates "
+                   f"({x}, {y}) already used by zone '{existing}'")
+            raise ParserError(err)
         seen_coords[coords] = zone_name

@@ -1,14 +1,110 @@
-*This project has been created as part of the 42 curriculum by okhouya>.*
+*This project has been created as part of the 42 curriculum by okhouya.*
 
 # Fly-in — Drone Simulation
 
 ## Description
 
-Fly-in is a drone fleet simulation that routes multiple drones from a start zone to an end zone through a network of connected zones. The program reads a map file defining zones with different types (normal, restricted, priority, blocked), capacity constraints, and connections, then simulates turn-by-turn movement to deliver all drones in the fewest turns possible.
+**Fly-in** is a turn-based drone fleet simulation engine built in Python. The project models a spatial graph of connected zones and navigates a fleet of drones from a specified `start_hub` to an `end_hub` in the fewest possible turns.
 
-The simulation respects zone occupancy limits, connection capacity, multi-turn movement for restricted zones, and simultaneous drone movement — all while avoiding conflicts and deadlocks.
+The simulation enforces strict physical and capacity constraints, including:
+- **Zone Occupancy (`max_drones`)**: Maximum concurrent drones inside a zone (unlimited for start/end hubs).
+- **Connection Capacity (`max_link_capacity`)**: Maximum drones crossing a link in a single turn.
+- **Zone Types**: Different traversal speeds and costs (`normal`, `priority`, `restricted`, `blocked`).
+- **Conflict Resolution**: Sorting movement attempts so drones closest to the goal move first.
 
-## Instructions
+---
+
+## Architecture & Pipeline
+
+The project follows a clean 5-component modular design:
+
+```
+Map File (.txt) ──► [ Parser ] ──► Graph
+                                    │
+                                    ▼
+                             [ Pathfinder ] (Dijkstra + Edge Penalization)
+                                    │
+                                    ▼
+                              [ Scheduler ] (Round-Robin Assignment)
+                                    │
+                                    ▼
+                             [ Simulation ] (2-Phase Turn Engine)
+                                    │
+                                    ▼
+                              [ Display ] (Colored ANSI Output)
+```
+
+1. **Parser (`src/parser.py`)**: Reads map definition files, validates syntax/metadata, checks for errors (duplicate coordinates, invalid zone types, missing hubs), and constructs the `Graph`.
+2. **Pathfinder (`src/pathfinder.py`)**: Computes optimal paths for each drone using **Dijkstra's Algorithm** with edge penalization.
+3. **Scheduler (`src/scheduler.py`)**: Assigns precomputed paths to drones using round-robin distribution.
+4. **Simulation (`src/simulation.py`)**: Executes turn-by-turn simulation enforcing zone/connection capacities and 2-turn restricted movements.
+5. **Display (`src/display.py`)**: Formats machine-readable output and renders human-readable colored terminal output.
+
+---
+
+## Algorithm Explanation
+
+### Pathfinding: Dijkstra's Algorithm (with Min-Heap & Edge Penalization)
+
+Instead of unweighted algorithms like BFS, **Fly-in uses Dijkstra's Algorithm** using Python's `heapq` priority queue ($O((V + E) \log V)$ complexity). Dijkstra is required because different zone types have different traversal costs:
+
+| Zone Type | Move Cost | Description |
+|-----------|-----------|-------------|
+| `priority` | **5** | Preferred routes — pathfinder prioritizes these zones |
+| `normal` | **10** | Standard zone |
+| `restricted` | **20** | High-cost zone — takes 2 turns to enter |
+| `blocked` | **∞** | Impassable — pathfinder completely avoids these zones |
+
+#### Multi-Drone Path Diversification (Edge Penalization)
+
+To prevent all drones from crowding into a single path and causing bottlenecks, Pathfinder runs Dijkstra once for each drone and penalizes previously used connections:
+
+$$\text{Weight}(u, v) = \text{Base Cost} + (\text{Edge Usage Count} \times 100)$$
+
+Every time a path uses connection $(u, v)$, its cost increases by $+100$ for subsequent searches. This forces Dijkstra to discover alternative parallel routes across the network.
+
+---
+
+### Simulation Engine: 2-Phase Turn Execution
+
+Each turn in the simulation executes in two distinct phases:
+
+- **Phase 1 (Restricted Transit Completion)**: Drones floating mid-air inside 2-turn restricted connections land at their destination zone without capacity checks (they are already in motion).
+- **Phase 2 (Active Drone Movement)**:
+  1. Active drones are sorted by **closest to goal first** ($\text{path length} - \text{path index}$).
+  2. For each drone:
+     - Check connection capacity (`max_link_capacity`).
+     - Check destination zone capacity (`max_drones`).
+     - If destination is `restricted`, enter connection (mid-air state for 1 turn).
+     - If `normal` or `priority`, arrive immediately (1 turn).
+     - If destination or link is full, the drone **waits** in place.
+
+---
+
+## Project Structure
+
+```
+flyin/
+├── main.py              # Application entry point
+├── src/
+│   ├── models.py        # Data classes (Zone, Connection, Drone) & custom exceptions
+│   ├── graph.py         # Graph structure & adjacency management
+│   ├── parser.py        # Map file parsing & validation
+│   ├── pathfinder.py    # Weighted Dijkstra pathfinding engine
+│   ├── scheduler.py     # Round-robin path assigner
+│   ├── simulation.py    # Turn-by-turn simulation execution engine
+│   └── display.py       # Terminal ANSI color visualizer
+├── tests/
+│   └── test_all.py      # Unit test suite (73 tests)
+├── maps/                # Map benchmark test cases (easy, medium, hard)
+├── Makefile             # Automation targets (run, test, lint, clean)
+├── README.md            # Project documentation
+└── requirements.txt     # Developer tools (flake8, mypy)
+```
+
+---
+
+## Usage Instructions
 
 ### Requirements
 
@@ -20,121 +116,66 @@ The simulation respects zone occupancy limits, connection capacity, multi-turn m
 make install
 ```
 
-### Running
-
-```bash
-make run MAP=maps/easy/01_linear_path.txt
-```
-
-Or directly:
+### Running the Simulation
 
 ```bash
 python3 main.py maps/easy/01_linear_path.txt
 ```
 
+Or using Makefile:
+
+```bash
+make run MAP=maps/easy/01_linear_path.txt
+```
+
 ### Capacity Info Mode
+
+To view live zone occupancy after each turn:
 
 ```bash
 python3 main.py maps/easy/01_linear_path.txt --capacity-info
 ```
 
-### Debug Mode
+### Testing
+
+Run the full automated test suite (73 unit & benchmark tests):
 
 ```bash
-make debug MAP=maps/easy/01_linear_path.txt
+make test
 ```
 
-### Linting
+### Linting & Type Checking
+
+Verify clean PEP 8 code style and strict typing:
 
 ```bash
 make lint
 ```
 
-### Clean
+---
 
-```bash
-make clean
+## Output Example
+
+For a linear map (`01_linear_path.txt`) with 3 drones:
+
+```text
+D1-A
+D1-B D2-A
+D1-goal D2-B D3-A
+D2-goal D3-B
+D3-goal
 ```
 
-## Algorithm Explanation
+- Each line represents one turn.
+- `D1-A` means Drone 1 moved to zone A.
+- Turns stop when all drones reach the goal.
 
-### Pathfinding: BFS (Breadth-First Search)
+---
 
-The pathfinder uses BFS to find shortest paths from the start zone to the end zone. BFS guarantees the shortest path in terms of hops, and is the simplest correct pathfinding algorithm for this problem.
+## AI Usage
 
-**Why BFS**: All normal and priority zones cost 1 turn per hop. Restricted zones cost 2 turns but are handled as a 2-step process (enter connection → arrive). BFS finds optimal paths efficiently in O(V + E) time.
+AI was used as a pair-programming assistant for:
+- Understanding project concepts and map constraint edge cases.
+- Debugging simulation state transitions and linting cleanups.
 
-**Multiple paths**: To find K different paths, we run BFS K times. After each path is found, we penalize the used edges so the next BFS naturally finds an alternative route. This distributes drones across different paths.
-
-**Priority zones**: When multiple paths have equal cost, paths through priority zones are preferred (they receive a negative score bonus in the BFS scoring).
-
-### Scheduling
-
-Drones are assigned to paths using simple round-robin distribution. This ensures even distribution across available paths without complex optimization.
-
-### Simulation
-
-The simulation runs turn by turn:
-
-1. **Phase 1**: Drones in transit (restricted zones) MUST complete their movement
-2. **Phase 2**: Other drones attempt to move to the next zone on their path
-3. **Conflict resolution**: Drones closer to their goal get priority
-4. **Capacity check**: Zone and connection capacity are enforced before each move
-5. **Waiting**: Drones that can't move stay in place (omitted from output)
-
-### Zone Types
-
-| Type | Movement Cost | Behavior |
-|------|--------------|----------|
-| `normal` | 1 turn | Standard zone (default) |
-| `restricted` | 2 turns | Drone enters connection on turn 1, arrives on turn 2 |
-| `priority` | 1 turn | Same as normal but preferred by pathfinder |
-| `blocked` | N/A | Cannot be entered — pathfinder avoids these |
-
-## Visual Representation
-
-The program provides colored terminal output to enhance understanding of the simulation:
-
-- **Zone colors**: Each zone's color from the map file is mapped to ANSI terminal colors
-- **Turn display**: Each turn shows drone movements with colored destination names
-- **Summary**: After simulation, total turns and delivery count are displayed
-
-The colored output appears below the raw simulation output, making it easy to see both the machine-readable format and the human-readable visualization.
-
-## Example
-
-### Input (01_linear_path.txt)
-
-```
-# Easy Level 1: Simple linear path
-nb_drones: 2
-
-start_hub: start 0 0 [color=green]
-hub: waypoint1 1 0 [color=blue]
-hub: waypoint2 2 0 [color=blue]
-end_hub: goal 3 0 [color=red]
-
-connection: start-waypoint1
-connection: waypoint1-waypoint2
-connection: waypoint2-goal
-```
-
-### Output
-
-```
-D1-waypoint1
-D1-waypoint2 D2-waypoint1
-D1-goal D2-waypoint2
-D2-goal
-```
-
-## Resources
-
-- [Graph Theory - BFS](https://en.wikipedia.org/wiki/Breadth-first_search)
-- [42 Fly-in Subject](./flyin.pdf)
-
-### AI Usage
-
-AI was used as a coding assistant for:
-understanding the project conspets 
-and help in fixing some bugs 
+All code logic was thoroughly reviewed, verified, and can be fully explained during evaluation.

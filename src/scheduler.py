@@ -7,7 +7,9 @@ from src.graph import Graph
 class Scheduler:
     """Assigns drones to paths, simple round-robin."""
 
-    def assign(self, drones: list[Drone], paths: list[list[str]], graph: Graph) -> None:
+    def assign(
+        self, drones: list[Drone], paths: list[list[str]], graph: Graph
+    ) -> None:
         """Assign each drone a path using round-robin distribution."""
         for i, drone in enumerate(drones):
             drone.path = list(paths[i % len(paths)])
