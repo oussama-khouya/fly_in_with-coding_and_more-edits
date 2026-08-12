@@ -32,10 +32,11 @@ class Display:
                 return f"{COLORS[zone.color]}{zone_name}{RESET}"
         return zone_name
 
-    def show_turn(self, turn: int, line: str, drones: list[Drone]) -> None:
+    # move_line in that turn like D1-A D2-B D3-END 
+    def show_turn(self, turn: int, move_line: str) -> None:
         """Display one turn with colors."""
         print(f"\n{BOLD}--- Turn {turn} ---{RESET}")
-        for part in line.split():
+        for part in move_line.split():
             dash_idx = part.index("-")
             drone_id = part[:dash_idx]
             dest = part[dash_idx + 1:]
@@ -48,11 +49,12 @@ class Display:
         print(f"  Total turns: {total_turns}")
         print(f"  Drones delivered: {delivered}/{len(drones)}")
 
+    # this is for live coding 
     def show_capacity_info(self, turn: int, drones: list[Drone]) -> None:
         """Display capacity info for --capacity-info flag."""
         occ: dict[str, int] = {}
         for drone in drones:
-            if not drone.delivered and not drone.in_transit:
+            if not drone.delivered and not drone.in_traveling:
                 occ[drone.position] = occ.get(drone.position, 0) + 1
 
         print(f"  {BOLD}Capacity:{RESET}")

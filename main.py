@@ -42,7 +42,7 @@ def main() -> None:
         # Colored visualization below
         print()
         for i, line in enumerate(output_lines, start=1):
-            display.show_turn(i, line, drones)
+            display.show_turn(i, line)
             if show_capacity:
                 display.show_capacity_info(i, drones)
 

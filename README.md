@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by \<login1\>.*
+*This project has been created as part of the 42 curriculum by okhouya>.*
 
 # Fly-in — Drone Simulation
 
@@ -136,8 +136,5 @@ D2-goal
 ### AI Usage
 
 AI was used as a coding assistant for:
-- Architecture design and planning
-- Code generation following the planned architecture
-- Documentation writing
-
-All generated code was reviewed, understood, and can be fully explained during peer evaluation.
+understanding the project conspets 
+and help in fixing some bugs 

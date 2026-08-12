@@ -1,0 +1,78 @@
+<h2 class="sr-only">Interactive step-by-step walkthrough of Dijkstra's algorithm finding the shortest path from S to E</h2>
+<svg width="100%" viewBox="0 0 680 300" role="img" style="margin-bottom: 1rem;">
+<title>Dijkstra algorithm graph, S to E</title>
+<line id="l-SA" x1="100" y1="163" x2="220" y2="97"/>
+<line id="l-AC" x1="280" y1="97" x2="400" y2="163"/>
+<line id="l-CE" x1="465" y1="180" x2="550" y2="180"/>
+<line id="l-SB" x1="100" y1="197" x2="220" y2="263"/>
+<line id="l-BC" x1="280" y1="263" x2="400" y2="197"/>
+<text class="ts" x="140" y="118" fill="var(--text-secondary)">2</text>
+<text class="ts" x="335" y="118" fill="var(--text-secondary)">2</text>
+<text class="ts" x="502" y="170" fill="var(--text-secondary)">4</text>
+<text class="ts" x="140" y="245" fill="var(--text-secondary)">5</text>
+<text class="ts" x="335" y="245" fill="var(--text-secondary)">3</text>
+<g id="g-S"><rect x="35" y="160" width="70" height="40" rx="8" stroke-width="1"/><text class="th" x="70" y="180" text-anchor="middle" dominant-baseline="central">S</text></g>
+<g id="g-A"><rect x="215" y="70" width="70" height="40" rx="8" stroke-width="1"/><text class="th" x="250" y="90" text-anchor="middle" dominant-baseline="central">A</text></g>
+<g id="g-B"><rect x="215" y="250" width="70" height="40" rx="8" stroke-width="1"/><text class="th" x="250" y="270" text-anchor="middle" dominant-baseline="central">B</text></g>
+<g id="g-C"><rect x="395" y="160" width="70" height="40" rx="8" stroke-width="1"/><text class="th" x="430" y="180" text-anchor="middle" dominant-baseline="central">C</text></g>
+<g id="g-E"><rect x="555" y="160" width="70" height="40" rx="8" stroke-width="1"/><text class="th" x="590" y="180" text-anchor="middle" dominant-baseline="central">E</text></g>
+</svg>
+
+<div style="display:flex; gap:24px; margin-bottom:1rem; flex-wrap:wrap;">
+<div style="flex:1; min-width:220px;">
+<p style="font-size:12px; color:var(--text-secondary); margin:0 0 6px;">best_cost</p>
+<div id="costs" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+</div>
+<div style="flex:1; min-width:220px;">
+<p style="font-size:12px; color:var(--text-secondary); margin:0 0 6px;">heap</p>
+<div id="heap" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+</div>
+</div>
+
+<p id="note" style="font-size:14px; line-height:1.6; min-height:44px; margin:0 0 1rem;"></p>
+
+<div style="display:flex; align-items:center; gap:12px;">
+<button id="prev" onclick="go(-1)">Prev</button>
+<button id="next" onclick="go(1)">Next</button>
+<span id="counter" style="font-size:13px; color:var(--text-secondary); margin-left:8px;"></span>
+</div>
+
+<script>
+const steps = [
+{node:{S:'c-amber',A:'c-gray',B:'c-gray',C:'c-gray',E:'c-gray'}, edge:{SA:'none',SB:'none',AC:'none',BC:'none',CE:'none'}, cost:{S:0}, heap:['(0, S)'], note:'Start at S. best_cost = {S: 0}. Push (0, S) onto the heap.'},
+{node:{S:'c-teal',A:'c-amber',B:'c-amber',C:'c-gray',E:'c-gray'}, edge:{SA:'tree',SB:'tree',AC:'none',BC:'none',CE:'none'}, cost:{S:0,A:2,B:5}, heap:['(2, A)','(5, B)'], note:'Pop (0, S). Expand: A -> 0+2=2, new, accept. B -> 0+5=5, new, accept.'},
+{node:{S:'c-teal',A:'c-teal',B:'c-amber',C:'c-amber',E:'c-gray'}, edge:{SA:'tree',SB:'tree',AC:'tree',BC:'none',CE:'none'}, cost:{S:0,A:2,B:5,C:4}, heap:['(4, C)','(5, B)'], note:'Pop (2, A). Expand: C -> 2+2=4, new, accept. best_cost[C]=4.'},
+{node:{S:'c-teal',A:'c-teal',B:'c-amber',C:'c-teal',E:'c-amber'}, edge:{SA:'tree',SB:'tree',AC:'tree',BC:'none',CE:'tree'}, cost:{S:0,A:2,B:5,C:4,E:8}, heap:['(5, B)','(8, E)'], note:'Pop (4, C). Expand: E -> 4+4=8, new, accept. best_cost[E]=8.'},
+{node:{S:'c-teal',A:'c-teal',B:'c-teal',C:'c-teal',E:'c-amber'}, edge:{SA:'tree',SB:'tree',AC:'tree',BC:'rejected',CE:'tree'}, cost:{S:0,A:2,B:5,C:4,E:8}, heap:['(8, E)'], note:'Pop (5, B). Expand: C -> 5+3=8. Compare to best_cost[C]=4. 8<4 is false, rejected. B leads nowhere new.'},
+{node:{S:'c-teal',A:'c-teal',B:'c-gray',C:'c-teal',E:'c-teal'}, edge:{SA:'path',SB:'tree',AC:'path',BC:'rejected',CE:'path'}, cost:{S:0,A:2,B:5,C:4,E:8}, heap:[], note:'Pop (8, E). current == end, stop. Backtrack: E <- C <- A <- S. Final path: S -> A -> C -> E, total cost 8.'}
+];
+const edgeStyle = {
+none:{stroke:'#D3D1C7', width:'1', dash:'2 5'},
+tree:{stroke:'#5F5E5A', width:'1.5', dash:'none'},
+path:{stroke:'#0F6E56', width:'3', dash:'none'},
+rejected:{stroke:'#D85A30', width:'1.5', dash:'5 4'}
+};
+let i = 0;
+function render() {
+  const s = steps[i];
+  for (const n in s.node) document.getElementById('g-'+n).setAttribute('class', s.node[n]);
+  for (const e in s.edge) {
+    const st = edgeStyle[s.edge[e]];
+    const el = document.getElementById('l-'+e);
+    el.setAttribute('stroke', st.stroke);
+    el.setAttribute('stroke-width', st.width);
+    el.setAttribute('stroke-dasharray', st.dash);
+  }
+  document.getElementById('costs').innerHTML = Object.entries(s.cost).map(([k,v]) =>
+    '<span style="font-size:12px; background:var(--surface-1); padding:3px 8px; border-radius:6px;">'+k+': '+v+'</span>').join('');
+  document.getElementById('heap').innerHTML = s.heap.length ? s.heap.map(h =>
+    '<span style="font-size:12px; background:var(--surface-1); padding:3px 8px; border-radius:6px;">'+h+'</span>').join('') :
+    '<span style="font-size:12px; color:var(--text-muted);">empty</span>';
+  document.getElementById('note').textContent = s.note;
+  document.getElementById('counter').textContent = 'Step '+(i+1)+' of '+steps.length;
+  document.getElementById('prev').disabled = i===0;
+  document.getElementById('next').disabled = i===steps.length-1;
+}
+function go(d) { i = Math.max(0, Math.min(steps.length-1, i+d)); render(); }
+render();
+</script>

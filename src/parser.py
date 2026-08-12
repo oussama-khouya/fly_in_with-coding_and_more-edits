@@ -1,4 +1,4 @@
-"""Parser: reads a map file and builds a Graph."""
+"""Parser: reads a map file and builds a Graph. to put the data inside the graph"""
 from __future__ import annotations
 from src.models import Zone, Connection, ParserError
 from src.graph import Graph
@@ -13,12 +13,14 @@ class Parser:
         has_drones = False
         has_start = False
         has_end = False
+        # just added those for the duplicate connections and coords
         seen_connections: set[tuple[str, str]] = set()
         seen_coords: dict[tuple[int, int], str] = {}
 
         try:
             with open(filepath, "r") as f:
-                lines = f.readlines()
+                # we read file lines and we return a list of line sep by new line
+                lines : list = f.readlines()
         except FileNotFoundError:
             raise ParserError(f"Error: File '{filepath}' not found")
 
@@ -96,6 +98,7 @@ class Parser:
 
 
     # helper methodes 
+    # parse the nb_drones count 
     def _parse_drone_count(self, content: str, line_num: int) -> int:
         """Parse drone count value."""
         try:
@@ -114,7 +117,9 @@ class Parser:
             if "]" not in content:
                 raise ParserError(f"Error on line {line_num}: Metadata block is not closed, missing ']'")
             bracket_end = content.index("]")
+            # here is the metadata str
             metadata_str = content[bracket_start + 1:bracket_end]
+            # in case we put we add somth ouside the brackets
             trash = content[bracket_end + 1:].strip()
             if trash:
                 raise ParserError(f"Error on line {line_num}: Unexpected text after metadata: '{trash}'")
@@ -133,7 +138,8 @@ class Parser:
             y = int(zocor[2])
         except ValueError:
             raise ParserError(f"Error on line {line_num}: Coordinates must be integers")
-
+        
+        # we start with as default zone 
         zone_type = "normal"
         color = ""
         max_drones = 1
@@ -144,6 +150,7 @@ class Parser:
                 if "=" not in attrib:
                     raise ParserError(f"Error on line {line_num}: Invalid metadata syntax '{attrib}'")
                 key, value = attrib.split("=", 1)
+                # we check if that key is duplicated in seen_keys
                 if key in seen_keys:
                     raise ParserError(f"Error on line {line_num}: Duplicate metadata attribute '{key}'")
                 seen_keys.add(key)
@@ -195,7 +202,9 @@ class Parser:
         if zone2 not in graph.zones:
             raise ParserError(f"Error on line {line_num}: Unknown zone '{zone2}' in connection")
 
+        # its one by default
         max_link_capacity = 1
+        # for duplicate metadata conn keys
         seen_keys: set[str] = set()
 
         if metadata_str:

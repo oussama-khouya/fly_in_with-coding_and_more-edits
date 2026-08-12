@@ -19,7 +19,7 @@ class Pathfinder:
                 break
             paths.append(path)
             # Mark connection as used so next search tries different route
-            # explain what does this loop do and why we do that with examples like why len(path) - 1)
+            # len(path) - 1 cause we do i + 1 adn i starts at 0 so we go beyound the path index 
             for i in range(len(path) - 1):
                 connection_tuple = (path[i], path[i + 1]) if path[i] < path[i + 1] else (path[i + 1], path[i])
                 count_cnx_used[connection_tuple] = count_cnx_used.get(connection_tuple, 0) + 1

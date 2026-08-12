@@ -1,4 +1,4 @@
-"""Data models for the Fly-in drone simulation."""
+"""Data models we use them to store the data for the simulation"""
 from __future__ import annotations
 from dataclasses import dataclass, field
 
@@ -24,6 +24,7 @@ class Zone:
     name: str
     x: int
     y: int
+    # metadata
     zone_type: str = "normal"
     color: str = ""
     max_drones: int = 1
@@ -36,6 +37,7 @@ class Connection:
     """One connection (edge) between two zones."""
     zone1: str
     zone2: str
+    # metadata
     max_link_capacity: int = 1
 
     def key(self) -> tuple[str, str]:

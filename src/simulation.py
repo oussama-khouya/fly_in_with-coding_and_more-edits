@@ -29,7 +29,7 @@ class Simulation:
         return self.output_lines
 
     def _do_turn(self) -> list[str]:
-        """Execute one simulation turn. Returns list of movement strings."""
+        """Execute one simulation turn. Returns list of movement strings of that turn"""
         movements: list[str] = []
 
         # Count current each zone occupancy ho wmany drones are in each zone 
@@ -38,12 +38,13 @@ class Simulation:
             # Count drones that are not delivered and not in traveling, we only count drones that are in a zone, if the drone is in traveling we don't count it because it's not in a zone
             if not drone.delivered and not drone.in_traveling:
                 zone_occ[drone.position] = zone_occ.get(drone.position, 0) + 1
-        # we initialize the cnx usaage and moved this turn to keep track of the connections used in this turn and the drones that have moved in this turn, we do that because we want to make sure that we don't exceed the max_link_capacity of the connection and we don't move the same drone twice in the same turn
+        # we initialize the cnx usaage and moved turn by turn  to keep track of the connections used in this turn and the drones that have moved in this turn, we do that because we want to make sure that we don't exceed the max_link_capacity of the connection and we don't move the same drone twice in the same turn
         conn_usage: dict[tuple[str, str], int] = {}
         moved_this_turn: set[int] = set()
 
         # Phase 1: check for floating drones traveling to there destination zones and move them to their destination (for restricted zones that take 2 turns to enter)
         for drone in self.drones:
+            # only traveling zones 
             if drone.delivered or not drone.in_traveling:
                 continue
             dest = drone.travel_dest
