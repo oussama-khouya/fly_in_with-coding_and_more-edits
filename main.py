@@ -31,7 +31,8 @@ def main() -> None:
         Scheduler().assign(drones, paths, graph)
 
         # Step 4: Run simulation
-        output_lines = Simulation(graph, drones).run()
+        sim = Simulation(graph, drones)
+        output_lines = sim.run()
 
         # Step 5: Output results
         display = Display(graph)
@@ -44,8 +45,10 @@ def main() -> None:
         print()
         for i, line in enumerate(output_lines, start=1):
             display.show_turn(i, line)
+            # Live coding: pass turn's capacity snapshot (zone_occ, conn_usage)  # noqa: E501
             if show_capacity:
-                display.show_capacity_info(i, drones)
+                z_occ, c_used = sim.capacity_history[i - 1]
+                display.show_capacity_info(z_occ, c_used)
 
         display.show_summary(len(output_lines), drones)
 

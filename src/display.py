@@ -50,17 +50,23 @@ class Display:
         print(f"  Total turns: {total_turns}")
         print(f"  Drones delivered: {delivered}/{len(drones)}")
 
-    # this is for live coding
-    def show_capacity_info(self, turn: int, drones: list[Drone]) -> None:
+    # Live coding: display capacity info for --capacity-info flag
+    def show_capacity_info(
+        self,
+        zone_occ: dict[str, int],
+        conn_usage: dict[tuple[str, str], int]
+    ) -> None:
         """Display capacity info for --capacity-info flag."""
-        occ: dict[str, int] = {}
-        for drone in drones:
-            if not drone.delivered and not drone.in_traveling:
-                occ[drone.position] = occ.get(drone.position, 0) + 1
-
-        print(f"  {BOLD}Capacity:{RESET}")
-        for name, count in sorted(occ.items()):
+        # Live coding: 1. Display zone occupancy for non-hub active zones
+        for name, count in sorted(zone_occ.items()):
             zone = self.graph.zones[name]
-            is_unlimited = zone.is_start or zone.is_end
-            cap_str = "∞" if is_unlimited else str(zone.max_drones)
-            print(f"    Zone {self.colorize(name)}: {count}/{cap_str} drones")
+            if not zone.is_start and not zone.is_end and count > 0:
+                print(f"  Zone {name}: {count}/{zone.max_drones} drones")
+
+        # Live coding: 2. Display connection capacity used
+        for (z1, z2), count in sorted(conn_usage.items()):
+            conn = self.graph.get_connection(z1, z2)
+            if count > 0:
+                msg = (f"  Connection {z1}-{z2}: "
+                       f"{count}/{conn.max_link_capacity} capacity used")
+                print(msg)
