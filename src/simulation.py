@@ -20,7 +20,8 @@ class Simulation:
 
     def run(self) -> list[str]:
         """Run the full simulation. Returns list of output lines, one per turn."""  # noqa: E501
-        max_turns = 10000
+        # setting a max turns to avoid deadlocks and inifity loop
+        max_turns = 150000
 
         while not all(d.delivered for d in self.drones):
             self.turn += 1
