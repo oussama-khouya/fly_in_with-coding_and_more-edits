@@ -40,6 +40,8 @@ class Connection:
     # metadata
     max_link_capacity: int = 1
 
+    # the conx zones in bidirectinal a-b same as b-a
+    # so just always sort them alph
     def key(self) -> tuple[str, str]:
         """Return sorted tuple for consistent lookup."""
         if self.zone1 < self.zone2:
