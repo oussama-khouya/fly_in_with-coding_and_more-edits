@@ -50,9 +50,25 @@ class Display:
         print(f"  Total turns: {total_turns}")
         print(f"  Drones delivered: {delivered}/{len(drones)}")
 
+<<<<<<< HEAD
     # Live coding: display capacity info for --capacity-info flag
     def show_capacity(self, zone_capp, cnx_usage):
         for zone_name , count in zone_capp.items():
             print(f"zone name : {zone_name} : {count} drones")
         for (a, b), count in cnx_usage.items():
             print(f"({a}, {b}) : {count} drones")
+=======
+    # Live coding: display simple capacity info for --capacity-info flag
+    def show_capacity_info(
+        self,
+        zone_occ: dict[str, int],
+        conn_usage: dict[tuple[str, str], int]
+    ) -> None:
+        """Display capacity info for --capacity-info flag."""
+        for key, count in zone_occ.items():
+            zone = self.graph.zones[key]
+            print(f"zone {key} : {count}/{zone.max_drones}")
+        for (z1, z2), count in conn_usage.items():
+            conn = self.graph.get_connection(z1, z2)
+            print(f"connection {z1}-{z2} : {count}/{conn.max_link_capacity}")
+>>>>>>> b021eb564c412c3c921dacb93087e1e64e9d98c0
