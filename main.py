@@ -17,8 +17,7 @@ def main() -> None:
         sys.exit(1)
 
     map_file = sys.argv[1]
-    show_ca  = "--capacity-info" in sys.argv
-
+    cap_flag = "--capacity-info" in sys.argv
     try:
         # Step 1: Parse the map file
         graph = Parser().parse(map_file)
@@ -46,10 +45,12 @@ def main() -> None:
         for i, line in enumerate(output_lines, start=1):
             display.show_turn(i, line)
             # Live coding: pass turn's capacity snapshot (zone_occ, conn_usage)  # noqa: E501
-            if show_ca:
-                zone_cap , conx_usage = sim.capacity_history[i - 1]
-                #build the print function
-                # display.show_cap_turn(zone_cap, conx_usage)
+            if cap_flag:
+                zone_cap , cnx_usage = sim.capacity_history[i - 1]
+                # we reate the the methode that will print that 
+                display.show_capacity(zone_cap, cnx_usage)
+
+            
 
 
         display.show_summary(len(output_lines), drones)

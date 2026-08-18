@@ -51,9 +51,8 @@ class Display:
         print(f"  Drones delivered: {delivered}/{len(drones)}")
 
     # Live coding: display capacity info for --capacity-info flag
-    def show_cap_turn(self, zone_cap, cnx_usage):
-
-        for zone_name , count in zone_cap.items():
-            print(f"zone {zone_name} : {count} drones")
-        for (a, b) , count in cnx_usage.items():
-            print(f"connection ({a}, {b}) : {count} drones")
+    def show_capacity(self, zone_capp, cnx_usage):
+        for zone_name , count in zone_capp.items():
+            print(f"zone name : {zone_name} : {count} drones")
+        for (a, b), count in cnx_usage.items():
+            print(f"({a}, {b}) : {count} drones")
