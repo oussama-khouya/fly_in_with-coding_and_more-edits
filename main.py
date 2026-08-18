@@ -26,7 +26,9 @@ def main() -> None:
         paths = Pathfinder().find_paths(graph, graph.nb_drones)
 
         # Step 3: Create drones and assign paths
-        drones : list[Drone] = [Drone(id=i + 1) for i in range(graph.nb_drones)]
+        drones: list[Drone] = [
+            Drone(id=i + 1) for i in range(graph.nb_drones)
+        ]
         Scheduler().assign(drones, paths, graph)
 
         # Step 4: Run simulation
@@ -46,12 +48,9 @@ def main() -> None:
             display.show_turn(i, line)
             # Live coding: pass turn's capacity snapshot (zone_occ, conn_usage)  # noqa: E501
             if cap_flag:
-                zone_cap , cnx_usage = sim.capacity_history[i - 1]
-                # we reate the the methode that will print that 
+                zone_cap, cnx_usage = sim.capacity_history[i - 1]
+                # we reate the the methode that will print that
                 display.show_capacity(zone_cap, cnx_usage)
-
-            
-
 
         display.show_summary(len(output_lines), drones)
 
@@ -61,7 +60,6 @@ def main() -> None:
     except Exception as e:
         print(f"Unexpected error: {e}", file=sys.stderr)
         sys.exit(1)
-
 
 
 if __name__ == "__main__":

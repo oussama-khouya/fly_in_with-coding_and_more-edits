@@ -47,7 +47,7 @@ class Graph:
             self.adjacency[conn.zone1].append(conn.zone2)
 
     # get neighbors of a zone using adjacency
-    # for path finder algho 
+    # for path finder algho
     def get_neighbors(self, zone_name: str) -> list[str]:
         """Get all neighbors of a zone."""
         # we get the neighbor zones of that zone, if the zone is not in the

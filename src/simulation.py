@@ -1,6 +1,6 @@
 """Simulation: runs the turn-by-turn drone movement."""
 from __future__ import annotations
-from src.models import Drone, SimulationError
+from src.models import Drone
 from src.graph import Graph
 
 
@@ -14,8 +14,10 @@ class Simulation:
         self.turn: int = 0
         self.output_lines: list[str] = []
         # Live coding: store turn-by-turn capacity snapshots (zone_occ & conn_usage)  # noqa: E501
-        self.capacity_history = []
-    
+        self.capacity_history: list[
+            tuple[dict[str, int], dict[tuple[str, str], int]]
+        ] = []
+
     # main methode
     def run(self) -> list[str]:
         """Run the full simulation. Returns list of output lines, one per turn."""  # noqa: E501
@@ -41,7 +43,8 @@ class Simulation:
                 zone_occ[drone.position] = zone_occ.get(drone.position, 0) + 1
 
         # we initialize the cnx usaage and moved turn by turn to keep track of
-        # the connections used in this turn and the drones that have moved in this turn
+        # the connections used in this turn and the drones that have moved in
+        # this turn
         conn_usage: dict[tuple[str, str], int] = {}
         moved_this_turn: set[int] = set()
 
@@ -70,6 +73,7 @@ class Simulation:
         ]
         # here we sort the active drones based how they are close to
         # their goal small first the closest to goal first
+        active.sort(key=lambda d: len(d.path) - d.path_index)
 
         for drone in active:
             next_zone_name = drone.path[drone.path_index + 1]
@@ -78,7 +82,7 @@ class Simulation:
             conn_key = conn.key()
 
             # Check connection capacity conn_usage{(zone1, zone2): number of
-            # drones using this connection in this turn} 
+            # drones using this connection in this turn}
             if conn_usage.get(conn_key, 0) >= conn.max_link_capacity:
                 continue
 
