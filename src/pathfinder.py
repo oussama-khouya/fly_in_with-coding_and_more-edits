@@ -41,7 +41,7 @@ class Pathfinder:
         max_allowed = min_len if min_len >= 15 else min_len + 1
         filtered = [p for p in paths if len(p) <= max_allowed]
 
-        return filtered if filtered else paths
+        return filtered
 
     def _dijkstra(
         self, graph: Graph, count_cnx_used: dict[tuple[str, str], int]

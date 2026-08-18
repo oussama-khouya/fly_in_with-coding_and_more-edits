@@ -13,14 +13,10 @@ class Simulation:
         self.drones = drones
         self.turn: int = 0
         self.output_lines: list[str] = []
-        # Live coding: store turn-by-turn capacity snapshots (zone_occ & conn_usage)  # noqa: E501
-        self.capacity_history: list[
-            tuple[dict[str, int], dict[tuple[str, str], int]]
-        ] = []
 
     # main methode
     def run(self) -> list[str]:
-        """Run the full simulation. Returns list of output lines, one per turn."""  # noqa: E501
+        """Run the full simulation. Returns list of output lines, one per turn."""  
         # setting a max turns to avoid deadlocks and inifity loop
 
         while not all(d.delivered for d in self.drones):
@@ -31,7 +27,7 @@ class Simulation:
         return self.output_lines
 
     def _do_turn(self) -> list[str]:
-        """Execute one simulation turn. Returns list of movement strings of that turn"""  # noqa: E501
+        """Execute one simulation turn. Returns list of movement strings of that turn""" 
         movements: list[str] = []
 
         # Count current each zone occupancy how many drones are in each zone
@@ -124,9 +120,5 @@ class Simulation:
                     drone.delivered = True
                     # "D1-waypoint1"
                 movements.append(f"D{drone.id}-{next_zone_name}")
-
-        # Live coding: record capacity snapshot for this turn if drones moved
-        # we make copy of it using dict()
-        self.capacity_history.append((dict(zone_occ), dict(conn_usage)))
 
         return movements

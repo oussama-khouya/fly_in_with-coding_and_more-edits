@@ -1,4 +1,3 @@
-"""Scheduler: assigns the paths to the drones"""
 from __future__ import annotations
 from src.models import Drone
 from src.graph import Graph

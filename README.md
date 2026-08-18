@@ -136,12 +136,7 @@ To view live zone occupancy after each turn:
 python3 main.py maps/easy/01_linear_path.txt --capacity-info
 ```
 
-### Testing
 
-Run the full automated test suite (73 unit & benchmark tests):
-
-```bash
-make test
 ```
 
 ### Linting & Type Checking
@@ -174,8 +169,7 @@ D3-goal
 
 ## AI Usage
 
-AI was used as a pair-programming assistant for:
+AI was used:
 - Understanding project concepts and map constraint edge cases.
-- Debugging simulation state transitions and linting cleanups.
+- debugging and clean up
 
-All code logic was thoroughly reviewed, verified, and can be fully explained during evaluation.
