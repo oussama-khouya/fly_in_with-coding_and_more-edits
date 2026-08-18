@@ -11,7 +11,7 @@ class Graph:
 
     adjacency is the connected zones to that zone
     """
-
+    # save the important data
     def __init__(self) -> None:
         """Initialize empty graph."""
         self.zones: dict[str, Zone] = {}
@@ -25,6 +25,7 @@ class Graph:
     # the data from that graph
     # we add the zone name to the graph and also to the adjancency and
     # start and end
+    # for parser
     def add_zone(self, zone: Zone) -> None:
         """Add a zone to the graph."""
         self.zones[zone.name] = zone
@@ -36,15 +37,17 @@ class Graph:
             self.end = zone.name
 
     #  add the connection and also add them togther as adjacency
+    # for parser
     def add_connection(self, conn: Connection) -> None:
         """Add a connection (bidirectional edge)."""
         self.connections[conn.key()] = conn
-        if conn.zone2 not in self.adjacency[conn.zone1]:
-            self.adjacency[conn.zone1].append(conn.zone2)
         if conn.zone1 not in self.adjacency[conn.zone2]:
             self.adjacency[conn.zone2].append(conn.zone1)
+        if conn.zone2 not in self.adjacency[conn.zone1]:
+            self.adjacency[conn.zone1].append(conn.zone2)
 
     # get neighbors of a zone using adjacency
+    # for path finder algho 
     def get_neighbors(self, zone_name: str) -> list[str]:
         """Get all neighbors of a zone."""
         # we get the neighbor zones of that zone, if the zone is not in the

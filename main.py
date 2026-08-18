@@ -17,7 +17,7 @@ def main() -> None:
         sys.exit(1)
 
     map_file = sys.argv[1]
-    show_capacity = "--capacity-info" in sys.argv
+    show_ca  = "--capacity-info" in sys.argv
 
     try:
         # Step 1: Parse the map file
@@ -27,7 +27,7 @@ def main() -> None:
         paths = Pathfinder().find_paths(graph, graph.nb_drones)
 
         # Step 3: Create drones and assign paths
-        drones = [Drone(id=i + 1) for i in range(graph.nb_drones)]
+        drones : list[Drone] = [Drone(id=i + 1) for i in range(graph.nb_drones)]
         Scheduler().assign(drones, paths, graph)
 
         # Step 4: Run simulation
@@ -46,9 +46,11 @@ def main() -> None:
         for i, line in enumerate(output_lines, start=1):
             display.show_turn(i, line)
             # Live coding: pass turn's capacity snapshot (zone_occ, conn_usage)  # noqa: E501
-            if show_capacity:
-                z_occ, c_used = sim.capacity_history[i - 1]
-                display.show_capacity_info(z_occ, c_used)
+            if show_ca:
+                zone_cap , conx_usage = sim.capacity_history[i - 1]
+                #build the print function
+                # display.show_cap_turn(zone_cap, conx_usage)
+
 
         display.show_summary(len(output_lines), drones)
 
@@ -58,6 +60,7 @@ def main() -> None:
     except Exception as e:
         print(f"Unexpected error: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 
 if __name__ == "__main__":

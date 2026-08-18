@@ -41,7 +41,7 @@ class Pathfinder:
     def _dijkstra(
         self, graph: Graph, count_cnx_used: dict[tuple[str, str], int]
     ) -> list[str] | None:
-        """Dijkstra from start to end.
+        """Dijkstra
 
         Considers zone costs, prefers priority zones, skips blocked.
         """

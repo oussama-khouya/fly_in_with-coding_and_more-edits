@@ -54,10 +54,12 @@ class Parser:
                                f"Duplicate start_hub definition")
                         raise ParserError(err)
                     zone = self._parse_zone(rest, line_num, is_start=True)
+                    # some checks
                     self._check_duplicate_zone(zone.name, graph, line_num)
                     self._check_duplicate_coords(
                         zone.x, zone.y, zone.name, seen_coords, line_num
                     )
+                    # add the zone
                     graph.add_zone(zone)
                     has_start = True
 
@@ -218,7 +220,7 @@ class Parser:
                     raise ParserError(err)
 
         if is_start or is_end:
-            max_drones = 999999
+            max_drones = 99999999999
 
         return Zone(
             name=zone_name,

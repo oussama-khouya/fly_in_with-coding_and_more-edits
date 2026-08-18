@@ -5,7 +5,7 @@ from src.graph import Graph
 
 
 class Scheduler:
-    """Assigns drones to paths, simple round-robin."""
+    """Assigns drones to paths, simple round-robin"""
 
     def assign(
         self, drones: list[Drone], paths: list[list[str]], graph: Graph
