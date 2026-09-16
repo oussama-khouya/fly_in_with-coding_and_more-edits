@@ -1,6 +1,5 @@
-"""Parser: reads a map file and builds a Graph."""
+"""Parser: reads a map file and builds a Graph. to put the data inside the graph"""
 from __future__ import annotations
-import re
 import sys
 from models import Zone, Connection, ParserError
 from graph import Graph
@@ -15,6 +14,7 @@ class Parser:
         has_drones = False
         has_start = False
         has_end = False
+        # just added those for the duplicate connections and coords
         seen_connections: set[tuple[str, str]] = set()
         seen_coords: dict[tuple[int, int], str] = {}
 
@@ -23,6 +23,8 @@ class Parser:
                 lines = sys.stdin.readlines()
             else:
                 with open(filepath, "r") as f:
+                    # we read file lines and we return a list of line sep by new
+                    # line
                     lines = f.readlines()
         except FileNotFoundError:
             raise ParserError(f"Error: File '{filepath}' not found")
@@ -30,7 +32,6 @@ class Parser:
         for line_num, raw_line in enumerate(lines, start=1):
             line = raw_line.strip()
 
-            # Skip empty lines or lines starting with # (e.g. #comment or # comment)
             if not line or line.startswith("#"):
                 continue
 
@@ -48,6 +49,12 @@ class Parser:
             prefix = prefix.strip()
             rest = rest.strip()
 
+            # Constraint: The first non-comment line must define nb_drones
+            if not has_drones and prefix != "nb_drones":
+                err = (f"Error on line {line_num}: First non-comment line "
+                       f"must define 'nb_drones: <number>'")
+                raise ParserError(err)
+
             try:
                 if prefix == "nb_drones":
                     if has_drones:
@@ -63,10 +70,12 @@ class Parser:
                                f"Duplicate start_hub definition")
                         raise ParserError(err)
                     zone = self._parse_zone(rest, line_num, is_start=True)
+                    # some checks
                     self._check_duplicate_zone(zone.name, graph, line_num)
                     self._check_duplicate_coords(
                         zone.x, zone.y, zone.name, seen_coords, line_num
                     )
+                    # add the zone
                     graph.add_zone(zone)
                     has_start = True
 
@@ -119,8 +128,11 @@ class Parser:
         if graph.start == graph.end:
             raise ParserError("Error: start_hub and end_hub cannot be the same zone")
 
+        # it feeds / stores the data to the graph class
         return graph
 
+    # helper methodes
+    # parse the nb_drones count
     def _parse_drone_count(self, content: str, line_num: int) -> int:
         """Parse drone count value."""
         try:
@@ -146,12 +158,18 @@ class Parser:
         metadata_str = ""
         if "[" in content:
             bracket_start = content.index("[")
+            if bracket_start == 0 or not content[bracket_start - 1].isspace():
+                err = (f"Error on line {line_num}: "
+                       f"Missing space before metadata block '['")
+                raise ParserError(err)
             if "]" not in content:
                 err = (f"Error on line {line_num}: "
                        f"Metadata block is not closed, missing ']'")
                 raise ParserError(err)
             bracket_end = content.index("]")
+            # here is the metadata str
             metadata_str = content[bracket_start + 1:bracket_end]
+            # in case we put we add somth ouside the brackets
             trash = content[bracket_end + 1:].strip()
             if trash:
                 err = (f"Error on line {line_num}: "
@@ -177,14 +195,21 @@ class Parser:
             err = f"Error on line {line_num}: Coordinates must be integers"
             raise ParserError(err)
 
+        # we start with as default zone
         zone_type = "normal"
         color = ""
         max_drones = 1
         seen_keys: set[str] = set()
 
         if metadata_str:
-            normalized_meta = re.sub(r'\s*=\s*', '=', metadata_str.strip())
-            for attrib in normalized_meta.split():
+            if not metadata_str.strip():
+                err = f"Error on line {line_num}: Empty metadata block"
+                raise ParserError(err)
+            if " =" in metadata_str or "= " in metadata_str:
+                err = (f"Error on line {line_num}: "
+                       f"Spaces around '=' are not allowed in metadata")
+                raise ParserError(err)
+            for attrib in metadata_str.split():
                 if "=" not in attrib:
                     err = (f"Error on line {line_num}: "
                            f"Invalid metadata syntax '{attrib}'")
@@ -194,6 +219,7 @@ class Parser:
                     err = (f"Error on line {line_num}: "
                            f"Invalid metadata syntax '{attrib}'")
                     raise ParserError(err)
+                # we check if that key is duplicated in seen_keys
                 if key in seen_keys:
                     err = (f"Error on line {line_num}: "
                            f"Duplicate metadata attribute '{key}'")
@@ -231,6 +257,9 @@ class Parser:
                     raise ParserError(err)
 
         if is_start or is_end:
+            if zone_type == "blocked":
+                err = f"Error on line {line_num}: Start or end hub cannot be blocked"
+                raise ParserError(err)
             max_drones = 99999999999
 
         return Zone(
@@ -251,6 +280,10 @@ class Parser:
         metadata_str = ""
         if "[" in content:
             bracket_start = content.index("[")
+            if bracket_start == 0 or not content[bracket_start - 1].isspace():
+                err = (f"Error on line {line_num}: "
+                       f"Missing space before metadata block '['")
+                raise ParserError(err)
             if "]" not in content:
                 err = (f"Error on line {line_num}: "
                        f"Metadata block is not closed, missing ']'")
@@ -273,6 +306,11 @@ class Parser:
         zone1 = parts[0].strip()
         zone2 = parts[1].strip()
 
+        if " " in zone1 or " " in zone2:
+            err = (f"Error on line {line_num}: "
+                   f"Zone names in connection cannot contain spaces")
+            raise ParserError(err)
+
         if zone1 not in graph.zones:
             err = (f"Error on line {line_num}: "
                    f"Unknown zone '{zone1}' in connection")
@@ -286,12 +324,20 @@ class Parser:
                    f"Connection cannot connect zone to itself '{zone1}'")
             raise ParserError(err)
 
+        # its one by default
         max_link_capacity = 1
+        # for duplicate metadata conn keys
         seen_keys: set[str] = set()
 
         if metadata_str:
-            normalized_meta = re.sub(r'\s*=\s*', '=', metadata_str.strip())
-            for attrib in normalized_meta.split():
+            if not metadata_str.strip():
+                err = f"Error on line {line_num}: Empty metadata block"
+                raise ParserError(err)
+            if " =" in metadata_str or "= " in metadata_str:
+                err = (f"Error on line {line_num}: "
+                       f"Spaces around '=' are not allowed in metadata")
+                raise ParserError(err)
+            for attrib in metadata_str.split():
                 if "=" not in attrib:
                     err = (f"Error on line {line_num}: "
                            f"Invalid metadata syntax '{attrib}'")
