@@ -1,8 +1,8 @@
 """Pathfinder: Dijkstra to find paths from start to end."""
 from __future__ import annotations
 import heapq
-from src.graph import Graph
-from src.models import SimulationError
+from graph import Graph
+from models import SimulationError
 
 
 class Pathfinder:

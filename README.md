@@ -34,11 +34,11 @@ Map File (.txt) ──► [ Parser ] ──► Graph
                               [ Display ] (Colored ANSI Output)
 ```
 
-1. **Parser (`src/parser.py`)**: Reads map definition files, validates syntax/metadata, checks for errors (duplicate coordinates, invalid zone types, missing hubs), and constructs the `Graph`.
-2. **Pathfinder (`src/pathfinder.py`)**: Computes optimal paths for each drone using **Dijkstra's Algorithm** with edge penalization.
-3. **Scheduler (`src/scheduler.py`)**: Assigns precomputed paths to drones using round-robin distribution.
-4. **Simulation (`src/simulation.py`)**: Executes turn-by-turn simulation enforcing zone/connection capacities and 2-turn restricted movements.
-5. **Display (`src/display.py`)**: Formats machine-readable output and renders human-readable colored terminal output.
+1. **Parser (`parser.py`)**: Reads map definition files, validates syntax/metadata, checks for errors (duplicate coordinates, invalid zone types, missing hubs), and constructs the `Graph`.
+2. **Pathfinder (`pathfinder.py`)**: Computes optimal paths for each drone using **Dijkstra's Algorithm** with edge penalization.
+3. **Scheduler (`scheduler.py`)**: Assigns precomputed paths to drones using round-robin distribution.
+4. **Simulation (`simulation.py`)**: Executes turn-by-turn simulation enforcing zone/connection capacities and 2-turn restricted movements.
+5. **Display (`display.py`)**: Formats and renders colored terminal output.
 
 ---
 
@@ -86,20 +86,17 @@ Each turn in the simulation executes in two distinct phases:
 ```
 flyin/
 ├── main.py              # Application entry point
-├── src/
-│   ├── models.py        # Data classes (Zone, Connection, Drone) & custom exceptions
-│   ├── graph.py         # Graph structure & adjacency management
-│   ├── parser.py        # Map file parsing & validation
-│   ├── pathfinder.py    # Weighted Dijkstra pathfinding engine
-│   ├── scheduler.py     # Round-robin path assigner
-│   ├── simulation.py    # Turn-by-turn simulation execution engine
-│   └── display.py       # Terminal ANSI color visualizer
-├── tests/
-│   └── test_all.py      # Unit test suite (73 tests)
+├── models.py            # Data classes (Zone, Connection, Drone) & custom exceptions
+├── graph.py             # Graph structure & adjacency management
+├── parser.py            # Map file parsing & validation
+├── pathfinder.py        # Weighted Dijkstra pathfinding engine
+├── scheduler.py         # Round-robin path assigner
+├── simulation.py        # Turn-by-turn simulation execution engine
+├── display.py           # Terminal ANSI color visualizer
 ├── maps/                # Map benchmark test cases (easy, medium, hard)
-├── Makefile             # Automation targets (run, test, lint, clean)
+├── Makefile             # Automation targets (run, install, clean)
 ├── README.md            # Project documentation
-└── requirements.txt     # Developer tools (flake8, mypy)
+└── requirements.txt     # Developer tools
 ```
 
 ---
@@ -167,9 +164,16 @@ D3-goal
 
 ---
 
-## AI Usage
+## Resources
 
-AI was used:
+### References
+- Dijkstra's Algorithm: Introduction to Algorithms (CLRS), Chapter 24 (Single-Source Shortest Paths).
+- Network Flow and Graph Routing concepts.
+- Python 3 `heapq` and `dataclasses` documentation.
+
+### AI Usage
+AI was used for:
 - Understanding project concepts and map constraint edge cases.
-- debugging and clean up
+- Assisting in debugging and code clean-up.
+- Structuring test cases and validating edge cases.
 

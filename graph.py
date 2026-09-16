@@ -3,7 +3,7 @@ Graph: stores zones and connections just the important data
  its our data container for pathfinder and simulation.
 """
 from __future__ import annotations
-from src.models import Zone, Connection
+from models import Zone, Connection
 
 
 class Graph:

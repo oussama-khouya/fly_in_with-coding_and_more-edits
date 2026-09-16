@@ -1,26 +1,33 @@
 """Simulation: runs the turn-by-turn drone movement."""
 from __future__ import annotations
-from src.models import Drone
-from src.graph import Graph
+from models import Drone, SimulationError
+from graph import Graph
 
 
 class Simulation:
     """Executes the simulation turn by turn."""
 
-    def __init__(self, graph: Graph, drones: list[Drone]) -> None:
+    def __init__(self, graph: Graph, drones: list[Drone], capacity_info: bool = False) -> None:
         """Initialize simulation."""
         self.graph = graph
         self.drones = drones
         self.turn: int = 0
+        self.capacity_info = capacity_info
         self.output_lines: list[str] = []
+        self.capacity_lines: list[str] = []
 
     # main methode
     def run(self) -> list[str]:
-        """Run the full simulation. Returns list of output lines, one per turn."""  
-        # setting a max turns to avoid deadlocks and inifity loop
+        """Run the full simulation. Returns list of output lines, one per turn."""
+        max_turns = 10000
 
         while not all(d.delivered for d in self.drones):
+            self.turn += 1
+            if self.turn > max_turns:
+                raise SimulationError("Error: Maximum simulation turns exceeded (deadlock)")
             movements = self._do_turn()
+            if not movements and any(not d.delivered and not d.in_traveling for d in self.drones):
+                raise SimulationError("Error: Simulation deadlock detected - no drones can move")
             if movements:
                 self.output_lines.append(" ".join(movements))
 
@@ -120,5 +127,17 @@ class Simulation:
                     drone.delivered = True
                     # "D1-waypoint1"
                 movements.append(f"D{drone.id}-{next_zone_name}")
+
+        if self.capacity_info:
+            z_parts = [
+                f"Zone {name}: {zone_occ.get(name, 0)}/{zone.max_drones} drones"
+                for name, zone in sorted(self.graph.zones.items())
+                if not zone.is_start and not zone.is_end
+            ]
+            c_parts = [
+                f"Connection {k[0]}-{k[1]}: {conn_usage.get(k, 0)}/{conn.max_link_capacity} capacity used"
+                for k, conn in sorted(self.graph.connections.items())
+            ]
+            self.capacity_lines.append(", ".join(z_parts + c_parts))
 
         return movements

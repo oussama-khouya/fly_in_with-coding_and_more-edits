@@ -1,10 +1,12 @@
 MAP ?= maps/easy/01_linear_path.txt
 
-install:
-	pip install -r requirements.txt
+all: run
 
 run:
 	python3 main.py $(MAP)
+
+install:
+	pip3 install -r requirements.txt || pip install -r requirements.txt
 
 debug:
 	python3 -m pdb main.py $(MAP)
@@ -22,4 +24,4 @@ lint-strict:
 	flake8 .
 	mypy . --strict
 
-.PHONY: install run debug clean lint lint-strict test
+.PHONY: all run install debug clean lint lint-strict test
