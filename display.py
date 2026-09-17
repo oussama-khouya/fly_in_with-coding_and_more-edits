@@ -1,9 +1,9 @@
 """Display: colored terminal output for visualization."""
-from __future__ import annotations
+from typing import Dict, List
 from graph import Graph
 
 # ANSI color codes
-COLORS: dict[str, str] = {
+COLORS: Dict[str, str] = {
     "red": "\033[91m", "green": "\033[92m", "yellow": "\033[93m",
     "blue": "\033[94m", "magenta": "\033[95m", "cyan": "\033[96m",
     "white": "\033[97m", "orange": "\033[38;5;208m", "gray": "\033[90m",
@@ -24,7 +24,7 @@ class Display:
 
     def colorize_line(self, line: str) -> str:
         """Apply zone color to each move token in the turn line."""
-        colored_moves = []
+        colored_moves: List[str] = []
         for move in line.split():
             dest = move.split("-")[-1]
             zone = self.graph.zones.get(dest)

@@ -1,7 +1,7 @@
 """Parser: reads a map file and builds a Graph.
 to put the data inside the graph
 """
-from __future__ import annotations
+from typing import Dict, Set, Tuple
 from models import Zone, Connection, ParserError
 from graph import Graph
 
@@ -16,8 +16,8 @@ class Parser:
         has_start = False
         has_end = False
         # just added those for the duplicate connections and coords
-        seen_connections: set[tuple[str, str]] = set()
-        seen_coords: dict[tuple[int, int], str] = {}
+        seen_connections: Set[Tuple[str, str]] = set()
+        seen_coords: Dict[Tuple[int, int], str] = {}
 
         try:
             with open(filepath, "r") as f:
@@ -207,7 +207,7 @@ class Parser:
         zone_type = "normal"
         color = ""
         max_drones = 1
-        seen_keys: set[str] = set()
+        seen_keys: Set[str] = set()
 
         if metadata_str:
             if not metadata_str.strip():
@@ -345,7 +345,7 @@ class Parser:
         # its one by default
         max_link_capacity = 1
         # for duplicate metadata conn keys
-        seen_keys: set[str] = set()
+        seen_keys: Set[str] = set()
 
         if metadata_str:
             if not metadata_str.strip():
@@ -406,7 +406,7 @@ class Parser:
         x: int,
         y: int,
         zone_name: str,
-        seen_coords: dict[tuple[int, int], str],
+        seen_coords: Dict[Tuple[int, int], str],
         line_num: int
     ) -> None:
         """Check if zone coordinates already exist."""

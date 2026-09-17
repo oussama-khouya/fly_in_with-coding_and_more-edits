@@ -1,6 +1,6 @@
 """Fly-in: Drone simulation - Entry point."""
-from __future__ import annotations
 import sys
+from typing import List
 from models import Drone, FlyinError
 from parser import Parser
 from pathfinder import Pathfinder
@@ -25,7 +25,7 @@ def main() -> None:
         paths = Pathfinder().find_paths(graph, graph.nb_drones)
 
         # Step 3: Create drones and assign paths
-        drones: list[Drone] = [Drone(id=i + 1) for i in range(graph.nb_drones)]
+        drones: List[Drone] = [Drone(id=i + 1) for i in range(graph.nb_drones)]
         Scheduler().assign(drones, paths, graph)
 
         # Step 4: Run simulation

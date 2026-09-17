@@ -2,7 +2,7 @@
 Graph: stores zones and connections just the important data
  its our data container for pathfinder and simulation.
 """
-from __future__ import annotations
+from typing import Dict, List, Tuple
 from models import Zone, Connection
 
 
@@ -14,9 +14,9 @@ class Graph:
     # save the important data
     def __init__(self) -> None:
         """Initialize empty graph."""
-        self.zones: dict[str, Zone] = {}
-        self.neighbors: dict[str, list[str]] = {}
-        self.connections: dict[tuple[str, str], Connection] = {}
+        self.zones: Dict[str, Zone] = {}
+        self.neighbors: Dict[str, List[str]] = {}
+        self.connections: Dict[Tuple[str, str], Connection] = {}
         self.start: str = ""
         self.end: str = ""
         self.nb_drones: int = 0
@@ -48,7 +48,7 @@ class Graph:
 
     # get neighbors of a zone using adjacency
     # for path finder algho
-    def get_neighbors(self, zone_name: str) -> list[str]:
+    def get_neighbors(self, zone_name: str) -> List[str]:
         """Get all neighbors of a zone."""
         # we get the neighbor zones of that zone, if the zone is not in the
         # adjacency list, we return an empty list

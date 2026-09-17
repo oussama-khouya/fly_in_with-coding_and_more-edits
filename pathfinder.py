@@ -1,5 +1,5 @@
 """Pathfinder: Dijkstra to find paths from start to end."""
-from __future__ import annotations
+from typing import Dict, List, Optional, Tuple
 import heapq
 from graph import Graph
 from models import SimulationError
@@ -11,10 +11,10 @@ class Pathfinder:
     Handles zone costs and priority zones correctly.
     """
 
-    def find_paths(self, graph: Graph, num_drones: int) -> list[list[str]]:
+    def find_paths(self, graph: Graph, num_drones: int) -> List[List[str]]:
         """Find paths using Dijkstra with edge penalization."""
-        paths: list[list[str]] = []
-        count_cnx_used: dict[tuple[str, str], int] = {}
+        paths: List[List[str]] = []
+        count_cnx_used: Dict[Tuple[str, str], int] = {}
 
         for _ in range(num_drones):
             path = self._dijkstra(graph, count_cnx_used)
@@ -44,8 +44,8 @@ class Pathfinder:
         return filtered
 
     def _dijkstra(
-        self, graph: Graph, count_cnx_used: dict[tuple[str, str], int]
-    ) -> list[str] | None:
+        self, graph: Graph, count_cnx_used: Dict[Tuple[str, str], int]
+    ) -> Optional[List[str]]:
         """Dijkstra
 
         Considers zone costs, prefers priority zones, skips blocked.
@@ -54,9 +54,9 @@ class Pathfinder:
         end = graph.end
 
         # Priority queue: (cost, zone_name)
-        heap: list[tuple[int, str]] = [(0, start)]
-        best_cost: dict[str, int] = {start: 0}
-        parent: dict[str, str] = {start: ""}
+        heap: List[Tuple[int, str]] = [(0, start)]
+        best_cost: Dict[str, int] = {start: 0}
+        parent: Dict[str, str] = {start: ""}
 
         while heap:
             cost, current = heapq.heappop(heap)
@@ -68,7 +68,7 @@ class Pathfinder:
 
             if current == end:
                 # Build path by backtracking
-                path: list[str] = []
+                path: List[str] = []
                 node = end
                 while node:
                     path.append(node)

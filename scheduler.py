@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import List
 from models import Drone
 from graph import Graph
 
@@ -7,7 +7,7 @@ class Scheduler:
     """Assigns drones to paths, simple round-robin"""
 
     def assign(
-        self, drones: list[Drone], paths: list[list[str]], graph: Graph
+        self, drones: List[Drone], paths: List[List[str]], graph: Graph
     ) -> None:
         """Assign each drone a path using round-robin distribution."""
         for i, drone in enumerate(drones):

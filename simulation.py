@@ -1,5 +1,5 @@
 """Simulation: runs the turn-by-turn drone movement."""
-from __future__ import annotations
+from typing import Dict, List, Set, Tuple
 from models import Drone
 from graph import Graph
 
@@ -7,15 +7,15 @@ from graph import Graph
 class Simulation:
     """Executes the simulation turn by turn."""
 
-    def __init__(self, graph: Graph, drones: list[Drone]) -> None:
+    def __init__(self, graph: Graph, drones: List[Drone]) -> None:
         """Initialize simulation."""
         self.graph = graph
         self.drones = drones
         self.turn: int = 0
-        self.output_lines: list[str] = []
+        self.output_lines: List[str] = []
 
     # main methode
-    def run(self) -> list[str]:
+    def run(self) -> List[str]:
         """Run the full simulation.
 
         Returns list of output lines, one per turn.
@@ -28,15 +28,15 @@ class Simulation:
 
         return self.output_lines
 
-    def _do_turn(self) -> list[str]:
+    def _do_turn(self) -> List[str]:
         """Execute one simulation turn.
 
         Returns list of movement strings of that turn.
         """
-        movements: list[str] = []
+        movements: List[str] = []
 
         # Count current each zone occupancy how many drones are in each zone
-        zone_occ: dict[str, int] = {}
+        zone_occ: Dict[str, int] = {}
         for drone in self.drones:
             # Count drones that are not delivered and not in traveling,
             # we only count drones that are in a zone
@@ -46,8 +46,8 @@ class Simulation:
         # we initialize the cnx usaage and moved turn by turn to keep track of
         # the connections used in this turn and the drones that have moved in
         # this turn
-        conn_usage: dict[tuple[str, str], int] = {}
-        moved_this_turn: set[int] = set()
+        conn_usage: Dict[Tuple[str, str], int] = {}
+        moved_this_turn: Set[int] = set()
 
         # Phase 1: check for floating drones traveling to there destination
         # zones (for restricted zones that take 2 turns to enter

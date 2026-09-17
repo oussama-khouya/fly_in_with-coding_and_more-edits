@@ -1,6 +1,6 @@
 """Data models we use them to store the data for the simulation"""
-from __future__ import annotations
 from dataclasses import dataclass, field
+from typing import List, Tuple
 
 
 class FlyinError(Exception):
@@ -42,7 +42,7 @@ class Connection:
 
     # the conx zones in bidirectinal a-b same as b-a
     # so just always sort them alph
-    def key(self) -> tuple[str, str]:
+    def key(self) -> Tuple[str, str]:
         """Return sorted tuple for consistent lookup."""
         if self.zone1 < self.zone2:
             return (self.zone1, self.zone2)
@@ -53,7 +53,7 @@ class Connection:
 class Drone:
     """One drone in the simulation."""
     id: int
-    path: list[str] = field(default_factory=list)
+    path: List[str] = field(default_factory=list)
     position: str = ""
     path_index: int = 0
     in_traveling: bool = False
