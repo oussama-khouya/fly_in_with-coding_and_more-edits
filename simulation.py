@@ -1,6 +1,6 @@
 """Simulation: runs the turn-by-turn drone movement."""
 from __future__ import annotations
-from models import Drone, SimulationError
+from models import Drone
 from graph import Graph
 
 
@@ -13,13 +13,13 @@ class Simulation:
         self.drones = drones
         self.turn: int = 0
         self.output_lines: list[str] = []
-        self.capacity_history = []
-
 
     # main methode
     def run(self) -> list[str]:
-        """Run the full simulation. Returns list of output lines, one per turn."""
+        """Run the full simulation.
 
+        Returns list of output lines, one per turn.
+        """
         while not all(d.delivered for d in self.drones):
             self.turn += 1
             movements = self._do_turn()
@@ -29,7 +29,10 @@ class Simulation:
         return self.output_lines
 
     def _do_turn(self) -> list[str]:
-        """Execute one simulation turn. Returns list of movement strings of that turn""" 
+        """Execute one simulation turn.
+
+        Returns list of movement strings of that turn.
+        """
         movements: list[str] = []
 
         # Count current each zone occupancy how many drones are in each zone
@@ -88,7 +91,10 @@ class Simulation:
             # zone_occ{zone_name: number of drones in this zone}
             dest_occ = zone_occ.get(next_zone_name, 0)
             is_unlimited_start_or_end = next_zone.is_start or next_zone.is_end
-            if not is_unlimited_start_or_end and dest_occ >= next_zone.max_drones:
+            if (
+                not is_unlimited_start_or_end
+                and dest_occ >= next_zone.max_drones
+            ):
                 continue
 
             if next_zone.zone_type == "restricted":
@@ -122,6 +128,5 @@ class Simulation:
                     drone.delivered = True
                     # "D1-waypoint1"
                 movements.append(f"D{drone.id}-{next_zone_name}")
-        self.capacity_history.append((dict(zone_occ), dict(conn_usage)))
-    
+
         return movements

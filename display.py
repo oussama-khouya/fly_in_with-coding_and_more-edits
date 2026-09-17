@@ -33,19 +33,3 @@ class Display:
             else:
                 colored_moves.append(move)
         return " ".join(colored_moves)
-
-
-    def show_capcaity(self, zone_cap, cnx_cap):
-        for zone_name , count_zone in zone_cap.items():
-            zone = self.graph.get_zone(zone_name)
-            if zone.is_start or zone.is_end:
-                continue
-            print(f"zone : {zone_name} : {count_zone} / {zone.max_drones}")
-            
-        for (a, b) , cnx_count in cnx_cap.items():
-            cnx = self.graph.get_connection(a, b)
-            print(f"connection {a}-{b} : {cnx_count} / {cnx.max_link_capacity}")
-
-
-
-

@@ -1,6 +1,7 @@
-"""Parser: reads a map file and builds a Graph. to put the data inside the graph"""
+"""Parser: reads a map file and builds a Graph.
+to put the data inside the graph
+"""
 from __future__ import annotations
-import sys
 from models import Zone, Connection, ParserError
 from graph import Graph
 
@@ -43,8 +44,12 @@ class Parser:
                 err = f"Error on line {line_num}: Unknown line format"
                 raise ParserError(err)
 
-            prefix, rest = line.split(":", 1)
-            prefix = prefix.strip()
+            raw_prefix, rest = line.split(":", 1)
+            if raw_prefix != raw_prefix.rstrip():
+                err = (f"Error on line {line_num}: "
+                       f"Spaces before ':' are not allowed")
+                raise ParserError(err)
+            prefix = raw_prefix.strip()
             rest = rest.strip()
 
             # the first none comment line should be nb of drones
@@ -125,7 +130,9 @@ class Parser:
             raise ParserError("Error: Missing end_hub definition")
         # this is for what !!
         if graph.start == graph.end:
-            raise ParserError("Error: start_hub and end_hub cannot be the same zone")
+            raise ParserError(
+                "Error: start_hub and end_hub cannot be the same zone"
+            )
 
         # it feeds / stores the data to the graph class
         return graph
@@ -177,14 +184,14 @@ class Parser:
                 raise ParserError(err)
             content = content[:bracket_start].strip()
 
-        #content first 
+        # content first
         zocor = content.split()
         if len(zocor) != 3:
             err = f"Error on line {line_num}: Zone must have name, x, and y"
             raise ParserError(err)
 
         zone_name = zocor[0]
-        if "—" in zone_name or  " " in zone_name:
+        if "-" in zone_name or "—" in zone_name or " " in zone_name:
             err = (f"Error on line {line_num}: "
                    f"Zone name cannot contain dashes and space")
             raise ParserError(err)
@@ -208,10 +215,11 @@ class Parser:
                 raise ParserError(err)
             if " =" in metadata_str or "= " in metadata_str:
                 err = (f"Error on line {line_num}: "
-                       f"Spaces around '=' are not allowed in metadata key=value'")
+                       f"Spaces around '=' are not allowed in metadata "
+                       f"key=value'")
                 raise ParserError(err)
 
-            # for each attribute now color=green 
+            # for each attribute now color=green
             for attrib in metadata_str.split():
                 if "=" not in attrib:
                     err = (f"Error on line {line_num}: "
@@ -242,20 +250,23 @@ class Parser:
                 elif key == "color":
                     if not value.isalpha():
                         err = (f"Error on line {line_num}: "
-                               f"Invalid color '{value}', must be single word string with alphabetic characters only")
+                               f"Invalid color '{value}', must be single "
+                               f"word string with alphabetic characters only")
                         raise ParserError(err)
                     color = value.lower()
                 elif key == "max_drones":
                     try:
-                        max_drones = int(value)
+                        parsed_max = int(value)
                     except ValueError:
                         err = (f"Error on line {line_num}: "
                                f"max_drones must be a positive integer")
                         raise ParserError(err)
-                    if max_drones <= 0:
-                        err = (f"Error on line {line_num}: "
-                               f"max_drones must be a positive integer")
-                        raise ParserError(err)
+                    if not (is_start or is_end):
+                        if parsed_max <= 0:
+                            err = (f"Error on line {line_num}: "
+                                   f"max_drones must be a positive integer")
+                            raise ParserError(err)
+                        max_drones = parsed_max
                 else:
                     err = (f"Error on line {line_num}: "
                            f"Unknown metadata key '{key}'")
@@ -309,7 +320,11 @@ class Parser:
         zone1 = parts[0].strip()
         zone2 = parts[1].strip()
 
-        if " " in zone1 or " " in zone2 or "—" in zone1 or "—" in zone2:
+        if (
+            " " in zone1 or " " in zone2
+            or "-" in zone1 or "-" in zone2
+            or "—" in zone1 or "—" in zone2
+        ):
             err = (f"Error on line {line_num}: "
                    f"Zone names in connection cannot contain spaces and dashs")
             raise ParserError(err)

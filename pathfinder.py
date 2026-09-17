@@ -61,7 +61,8 @@ class Pathfinder:
         while heap:
             cost, current = heapq.heappop(heap)
 
-            # Skip if we already found to achieve optimal turn benchmarksa better path to this node
+            # Skip if we already found to achieve optimal turn benchmarks
+            # a better path to this node
             if cost > best_cost.get(current, float("inf")):
                 continue
 

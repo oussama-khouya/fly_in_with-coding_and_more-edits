@@ -10,14 +10,12 @@ from display import Display
 
 
 def main() -> None:
-   
     if len(sys.argv) < 2:
-        msg = "Usage: python3 main.py <map_file> [--capacity-info]"
+        msg = "Usage: python3 main.py <map_file>"
         print(msg, file=sys.stderr)
         sys.exit(1)
-  
+
     map_file = sys.argv[1]
-    capacity_flag = "--capacity-info" in sys.argv
 
     try:
         # Step 1: Parse the map file
@@ -38,12 +36,8 @@ def main() -> None:
 
         # Step 5: Output results colorized
         display = Display(graph)
-        for i, line in enumerate(output_lines):
+        for line in output_lines:
             print(display.colorize_line(line))
-            if capacity_flag:
-                zone_cap , cnx_cap = sim.capacity_history[i]
-                display.show_capcaity(zone_cap, cnx_cap)
-
 
         print(f"number of turns : {turn}")
 
