@@ -36,7 +36,7 @@ class Pathfinder:
                        f"to '{graph.end}'")
             raise SimulationError(err_msg)
 
-        # Filter out long detour paths to achieve optimal turn benchmarks
+        # Filter out long detour paths to achieave 45 turn in challenger
         min_len = min(len(p) for p in paths)
         max_allowed = min_len if min_len >= 15 else min_len + 1
         filtered = [p for p in paths if len(p) <= max_allowed]
@@ -61,7 +61,7 @@ class Pathfinder:
         while heap:
             cost, current = heapq.heappop(heap)
 
-            # Skip if we already found a better path to this node
+            # Skip if we already found to achieve optimal turn benchmarksa better path to this node
             if cost > best_cost.get(current, float("inf")):
                 continue
 

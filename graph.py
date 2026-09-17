@@ -15,7 +15,7 @@ class Graph:
     def __init__(self) -> None:
         """Initialize empty graph."""
         self.zones: dict[str, Zone] = {}
-        self.adjacency: dict[str, list[str]] = {}
+        self.neighbors: dict[str, list[str]] = {}
         self.connections: dict[tuple[str, str], Connection] = {}
         self.start: str = ""
         self.end: str = ""
@@ -23,28 +23,28 @@ class Graph:
 
     # we will build methodes to store data inside the graph and also get
     # the data from that graph
-    # we add the zone name to the graph and also to the adjancency and
+    # we add the zone name to the graph and also to the neighbors and
     # start and end
     # for parser
     def add_zone(self, zone: Zone) -> None:
         """Add a zone to the graph."""
         self.zones[zone.name] = zone
-        if zone.name not in self.adjacency:
-            self.adjacency[zone.name] = []
+        if zone.name not in self.neighbors:
+            self.neighbors[zone.name] = []
         if zone.is_start:
             self.start = zone.name
         if zone.is_end:
             self.end = zone.name
 
-    #  add the connection and also add them togther as adjacency
+    #  add the connection and also add them togther as neighbors
     # for parser
     def add_connection(self, conn: Connection) -> None:
         """Add a connection (bidirectional edge)."""
         self.connections[conn.key()] = conn
-        if conn.zone1 not in self.adjacency[conn.zone2]:
-            self.adjacency[conn.zone2].append(conn.zone1)
-        if conn.zone2 not in self.adjacency[conn.zone1]:
-            self.adjacency[conn.zone1].append(conn.zone2)
+        if conn.zone1 not in self.neighbors[conn.zone2]:
+            self.neighbors[conn.zone2].append(conn.zone1)
+        if conn.zone2 not in self.neighbors[conn.zone1]:
+            self.neighbors[conn.zone1].append(conn.zone2)
 
     # get neighbors of a zone using adjacency
     # for path finder algho
@@ -52,7 +52,7 @@ class Graph:
         """Get all neighbors of a zone."""
         # we get the neighbor zones of that zone, if the zone is not in the
         # adjacency list, we return an empty list
-        return self.adjacency.get(zone_name, [])
+        return self.neighbors.get(zone_name, [])
 
     # get connection betweeen two zones
     def get_connection(self, z1: str, z2: str) -> Connection:

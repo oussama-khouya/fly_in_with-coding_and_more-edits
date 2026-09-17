@@ -29,6 +29,7 @@ class Parser:
         except FileNotFoundError:
             raise ParserError(f"Error: File '{filepath}' not found")
 
+        # the looping line for each line
         for line_num, raw_line in enumerate(lines, start=1):
             line = raw_line.strip()
 
@@ -52,7 +53,7 @@ class Parser:
             # Constraint: The first non-comment line must define nb_drones
             if not has_drones and prefix != "nb_drones":
                 err = (f"Error on line {line_num}: First non-comment line "
-                       f"must define 'nb_drones: <number>'")
+                       f"must be 'nb_drones: <number>'")
                 raise ParserError(err)
 
             try:
@@ -125,6 +126,7 @@ class Parser:
             raise ParserError("Error: Missing start_hub definition")
         if not has_end:
             raise ParserError("Error: Missing end_hub definition")
+        # this is for what !!
         if graph.start == graph.end:
             raise ParserError("Error: start_hub and end_hub cannot be the same zone")
 
@@ -158,6 +160,7 @@ class Parser:
         metadata_str = ""
         if "[" in content:
             bracket_start = content.index("[")
+            # before meta data bracket should be space
             if bracket_start == 0 or not content[bracket_start - 1].isspace():
                 err = (f"Error on line {line_num}: "
                        f"Missing space before metadata block '['")
@@ -169,7 +172,7 @@ class Parser:
             bracket_end = content.index("]")
             # here is the metadata str
             metadata_str = content[bracket_start + 1:bracket_end]
-            # in case we put we add somth ouside the brackets
+            # in case we we add somth ouside the brackets
             trash = content[bracket_end + 1:].strip()
             if trash:
                 err = (f"Error on line {line_num}: "
@@ -177,15 +180,16 @@ class Parser:
                 raise ParserError(err)
             content = content[:bracket_start].strip()
 
+        #content first 
         zocor = content.split()
         if len(zocor) != 3:
             err = f"Error on line {line_num}: Zone must have name, x, and y"
             raise ParserError(err)
 
         zone_name = zocor[0]
-        if "-" in zone_name:
+        if "—" in zone_name or  " " in zone_name:
             err = (f"Error on line {line_num}: "
-                   f"Zone name cannot contain dashes")
+                   f"Zone name cannot contain dashes and space")
             raise ParserError(err)
 
         try:
@@ -207,14 +211,18 @@ class Parser:
                 raise ParserError(err)
             if " =" in metadata_str or "= " in metadata_str:
                 err = (f"Error on line {line_num}: "
-                       f"Spaces around '=' are not allowed in metadata")
+                       f"Spaces around '=' are not allowed in metadata key=value'")
                 raise ParserError(err)
+
+            # for each attribute now color=green 
             for attrib in metadata_str.split():
                 if "=" not in attrib:
                     err = (f"Error on line {line_num}: "
                            f"Invalid metadata syntax '{attrib}'")
                     raise ParserError(err)
+                # key=value
                 key, value = attrib.split("=", 1)
+                # !!!!!idg
                 if not key or not value:
                     err = (f"Error on line {line_num}: "
                            f"Invalid metadata syntax '{attrib}'")
@@ -257,10 +265,7 @@ class Parser:
                     raise ParserError(err)
 
         if is_start or is_end:
-            if zone_type == "blocked":
-                err = f"Error on line {line_num}: Start or end hub cannot be blocked"
-                raise ParserError(err)
-            max_drones = 99999999999
+            max_drones = 999999999999999999999999
 
         return Zone(
             name=zone_name,
@@ -278,6 +283,7 @@ class Parser:
     ) -> Connection:
         """Parse connection definition line content."""
         metadata_str = ""
+        # if meta data exist
         if "[" in content:
             bracket_start = content.index("[")
             if bracket_start == 0 or not content[bracket_start - 1].isspace():
@@ -296,7 +302,7 @@ class Parser:
                        f"Unexpected text after metadata: '{trailing}'")
                 raise ParserError(err)
             content = content[:bracket_start].strip()
-
+        # if meta data
         parts = content.split("-")
         if len(parts) != 2:
             err = (f"Error on line {line_num}: "
@@ -306,9 +312,9 @@ class Parser:
         zone1 = parts[0].strip()
         zone2 = parts[1].strip()
 
-        if " " in zone1 or " " in zone2:
+        if " " in zone1 or " " in zone2 or "—" in zone1 or "—" in zone2:
             err = (f"Error on line {line_num}: "
-                   f"Zone names in connection cannot contain spaces")
+                   f"Zone names in connection cannot contain spaces and dashs")
             raise ParserError(err)
 
         if zone1 not in graph.zones:

@@ -10,18 +10,15 @@ from display import Display
 
 
 def main() -> None:
-    capacity_info = "--capacity-info" in sys.argv
-    args = [a for a in sys.argv[1:] if a != "--capacity-info"]
+   
+    """Main entry point. Usage: python3 main.py <map_file> [--capacity-info]"""
+    if len(sys.argv) < 2:
+        msg = "Usage: python3 main.py <map_file> [--capacity-info]"
+        print(msg, file=sys.stderr)
+        sys.exit(1)
 
-    if not args:
-        if not sys.stdin.isatty():
-            map_file = "-"
-        else:
-            msg = "Usage: python3 main.py <map_file> [--capacity-info]"
-            print(msg, file=sys.stderr)
-            sys.exit(1)
-    else:
-        map_file = args[0]
+    cap_flag = "--capacity-info" in sys.argv    
+    map_file = sys.argv[1]
 
     try:
         # Step 1: Parse the map file
@@ -31,21 +28,28 @@ def main() -> None:
         paths = Pathfinder().find_paths(graph, graph.nb_drones)
 
         # Step 3: Create drones and assign paths
-        drones: list[Drone] = [
-            Drone(id=i + 1) for i in range(graph.nb_drones)
-        ]
+        drones: list[Drone] = [Drone(id=i + 1) for i in range(graph.nb_drones)]
         Scheduler().assign(drones, paths, graph)
 
         # Step 4: Run simulation
-        sim = Simulation(graph, drones, capacity_info=capacity_info)
+        sim = Simulation(graph, drones)
         output_lines = sim.run()
+        # for how many turns we get
+        turn = sim.turn
 
         # Step 5: Output results colorized
         display = Display(graph)
         for i, line in enumerate(output_lines):
             print(display.colorize_line(line))
-            if capacity_info and i < len(sim.capacity_lines):
-                print(f"  [Capacity] {sim.capacity_lines[i]}")
+
+            # Live coding: pass turn's capacity snapshot (zone_occ, conn_usage)  # noqa: E501
+            if cap_flag:
+                zone_cap, cnx_usage = sim.capacity_history[i - 1]
+                # we reate the the methode that will print that
+                display.show_capacity(zone_cap, cnx_usage)
+
+
+        print(f"number of turns : {turn}")
 
     except KeyboardInterrupt:
         print("Error: Execution interrupted by user", file=sys.stderr)

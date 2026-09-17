@@ -7,14 +7,14 @@ from graph import Graph
 class Simulation:
     """Executes the simulation turn by turn."""
 
-    def __init__(self, graph: Graph, drones: list[Drone], capacity_info: bool = False) -> None:
+    def __init__(self, graph: Graph, drones: list[Drone]) -> None:
         """Initialize simulation."""
         self.graph = graph
         self.drones = drones
         self.turn: int = 0
-        self.capacity_info = capacity_info
         self.output_lines: list[str] = []
-        self.capacity_lines: list[str] = []
+        self.capacity_history: list[tuple[dict[str, int], dict[tuple[str, str], int]]] = []
+
 
     # main methode
     def run(self) -> list[str]:
@@ -54,7 +54,7 @@ class Simulation:
         # Phase 1: check for floating drones traveling to there destination
         # zones (for restricted zones that take 2 turns to enter
         for drone in self.drones:
-            # only traveling zones
+            # only traveling drones
             if drone.delivered or not drone.in_traveling:
                 continue
             dest = drone.travel_dest
@@ -127,17 +127,11 @@ class Simulation:
                     drone.delivered = True
                     # "D1-waypoint1"
                 movements.append(f"D{drone.id}-{next_zone_name}")
+        
+        
+        # Live coding: record capacity snapshot for this turn if drones moved
+        # we make copy of it using dict()
+        self.capacity_history.append((dict(zone_occ), dict(conn_usage)))
 
-        if self.capacity_info:
-            z_parts = [
-                f"Zone {name}: {zone_occ.get(name, 0)}/{zone.max_drones} drones"
-                for name, zone in sorted(self.graph.zones.items())
-                if not zone.is_start and not zone.is_end
-            ]
-            c_parts = [
-                f"Connection {k[0]}-{k[1]}: {conn_usage.get(k, 0)}/{conn.max_link_capacity} capacity used"
-                for k, conn in sorted(self.graph.connections.items())
-            ]
-            self.capacity_lines.append(", ".join(z_parts + c_parts))
 
         return movements
