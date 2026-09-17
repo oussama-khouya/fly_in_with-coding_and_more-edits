@@ -19,13 +19,10 @@ class Parser:
         seen_coords: dict[tuple[int, int], str] = {}
 
         try:
-            if filepath == "-":
-                lines = sys.stdin.readlines()
-            else:
-                with open(filepath, "r") as f:
-                    # we read file lines and we return a list of line sep by new
-                    # line
-                    lines = f.readlines()
+            with open(filepath, "r") as f:
+                # we read file lines and we return a list of line sep by new
+                # line
+                lines = f.readlines()
         except FileNotFoundError:
             raise ParserError(f"Error: File '{filepath}' not found")
 
@@ -50,7 +47,7 @@ class Parser:
             prefix = prefix.strip()
             rest = rest.strip()
 
-            # Constraint: The first non-comment line must define nb_drones
+            # the first none comment line should be nb of drones
             if not has_drones and prefix != "nb_drones":
                 err = (f"Error on line {line_num}: First non-comment line "
                        f"must be 'nb_drones: <number>'")

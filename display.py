@@ -35,14 +35,17 @@ class Display:
         return " ".join(colored_moves)
 
 
-
-    def show_capacity(self, zone_capp: dict[str, int], cnx_usage: dict[tuple[str, str], int]) -> None:
-        """Display capacity info for --capacity-info flag."""
-        for zone_name, count in zone_capp.items():
-            zone = self.graph.zones[zone_name]
+    def show_capcaity(self, zone_cap, cnx_cap):
+        for zone_name , count_zone in zone_cap.items():
+            zone = self.graph.get_zone(zone_name)
             if zone.is_start or zone.is_end:
                 continue
-            print(f"zone {zone_name} : {count}/{zone.max_drones}")
-        for (a, b), count in cnx_usage.items():
-            conn = self.graph.get_connection(a, b)
-            print(f"connection {a}-{b} : {count}/{conn.max_link_capacity}")
+            print(f"zone : {zone_name} : {count_zone} / {zone.max_drones}")
+            
+        for (a, b) , cnx_count in cnx_cap.items():
+            cnx = self.graph.get_connection(a, b)
+            print(f"connection {a}-{b} : {cnx_count} / {cnx.max_link_capacity}")
+
+
+
+

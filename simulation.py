@@ -13,21 +13,16 @@ class Simulation:
         self.drones = drones
         self.turn: int = 0
         self.output_lines: list[str] = []
-        self.capacity_history: list[tuple[dict[str, int], dict[tuple[str, str], int]]] = []
+        self.capacity_history = []
 
 
     # main methode
     def run(self) -> list[str]:
         """Run the full simulation. Returns list of output lines, one per turn."""
-        max_turns = 10000
 
         while not all(d.delivered for d in self.drones):
             self.turn += 1
-            if self.turn > max_turns:
-                raise SimulationError("Error: Maximum simulation turns exceeded (deadlock)")
             movements = self._do_turn()
-            if not movements and any(not d.delivered and not d.in_traveling for d in self.drones):
-                raise SimulationError("Error: Simulation deadlock detected - no drones can move")
             if movements:
                 self.output_lines.append(" ".join(movements))
 
@@ -92,8 +87,8 @@ class Simulation:
             # Check destination zone capacity
             # zone_occ{zone_name: number of drones in this zone}
             dest_occ = zone_occ.get(next_zone_name, 0)
-            is_unlimited = next_zone.is_start or next_zone.is_end
-            if not is_unlimited and dest_occ >= next_zone.max_drones:
+            is_unlimited_start_or_end = next_zone.is_start or next_zone.is_end
+            if not is_unlimited_start_or_end and dest_occ >= next_zone.max_drones:
                 continue
 
             if next_zone.zone_type == "restricted":
@@ -127,11 +122,6 @@ class Simulation:
                     drone.delivered = True
                     # "D1-waypoint1"
                 movements.append(f"D{drone.id}-{next_zone_name}")
-        
-        
-        # Live coding: record capacity snapshot for this turn if drones moved
-        # we make copy of it using dict()
         self.capacity_history.append((dict(zone_occ), dict(conn_usage)))
-
-
+    
         return movements

@@ -4,19 +4,19 @@ This collection contains carefully crafted maps designed to test different aspec
 
 ## Map Categories
 
-### Easy Maps
+### 🟢 Easy Maps
 **Target**: Beginners, basic algorithm testing
 - `01_linear_path.txt` - Simple linear progression (2 drones)
 - `02_simple_fork.txt` - Basic path splitting (4 drones)  
 - `03_basic_capacity.txt` - Introduction to capacity constraints (4 drones)
 
-###  Medium Maps
+### 🟡 Medium Maps
 **Target**: Intermediate challenges, algorithm optimization
 - `01_dead_end_trap.txt` - Dead ends that can trap naive algorithms (5 drones)
 - `02_circular_loop.txt` - Circular paths with restricted zones (6 drones)
 - `03_priority_puzzle.txt` - Optimal path selection with priority zones (5 drones)
 
-### Hard Maps
+### 🔴 Hard Maps
 **Target**: Advanced algorithms, stress testing
 - `01_maze_nightmare.txt` - Complex maze with multiple traps and loops (8 drones)
 - `02_capacity_hell.txt` - Extreme capacity constraints requiring careful timing (12 drones)
