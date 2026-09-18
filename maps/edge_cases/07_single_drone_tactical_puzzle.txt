@@ -1,0 +1,30 @@
+# Edge Case 7: Single Drone Tactical Puzzle
+# Tests pathfinding obstacle avoidance and zone preference with a single drone (nb_drones: 1).
+# The most direct 2-hop path contains a blocked hazard (trap_rock) which must be skipped.
+# Between the alternative routes, one route has restricted zones (cost=20, 2 turns each)
+# while the other route has priority zones (cost=5, 1 turn each).
+# Tests that Dijkstra rejects the blocked node and chooses the optimal priority path.
+
+nb_drones: 1
+
+start_hub: start 0 0 [color=green]
+hub: trap_rock 1 0 [zone=blocked color=red]
+hub: slow_lane1 1 -1 [zone=restricted color=orange]
+hub: slow_lane2 2 -1 [zone=restricted color=orange]
+hub: fast_lane1 1 1 [zone=priority color=cyan]
+hub: fast_lane2 2 1 [zone=priority color=cyan]
+end_hub: goal 3 0 [color=green]
+
+# Blocked path hazard
+connection: start-trap_rock
+connection: trap_rock-goal
+
+# Slow restricted detour
+connection: start-slow_lane1
+connection: slow_lane1-slow_lane2
+connection: slow_lane2-goal
+
+# Optimal priority bypass
+connection: start-fast_lane1
+connection: fast_lane1-fast_lane2
+connection: fast_lane2-goal

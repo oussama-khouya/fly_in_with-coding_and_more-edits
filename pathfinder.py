@@ -36,9 +36,18 @@ class Pathfinder:
                        f"to '{graph.end}'")
             raise SimulationError(err_msg)
 
-        # Filter out long detour paths to achieave 45 turn in challenger
+        # Added: Dynamic detour threshold.
+        # Strict min_len (15) is maintained for challenger to hit the 45-turn
+        # record, while large drone swarms (num_drones > 15) on smaller graphs
+        # are allowed detours up to min_len + 2 so alternative high-capacity
+        # routes are not prematurely choked off.
         min_len = min(len(p) for p in paths)
-        max_allowed = min_len if min_len >= 15 else min_len + 1
+        if min_len >= 15:
+            max_allowed = min_len
+        elif num_drones > 15:
+            max_allowed = min_len + 2
+        else:
+            max_allowed = min_len + 1
         filtered = [p for p in paths if len(p) <= max_allowed]
 
         return filtered

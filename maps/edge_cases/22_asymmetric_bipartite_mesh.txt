@@ -1,0 +1,38 @@
+# Edge Case 22: Asymmetric Bipartite Mesh
+# Tests a fully interconnected bipartite mesh between 3 Left nodes (priority, normal, restricted)
+# and 3 Right nodes (priority, normal, restricted).
+# Evaluates multi-modal Dijkstra cost optimization across 9 distinct cross-edges with diverse zone penalties.
+
+nb_drones: 12
+
+start_hub: start 0 0 [color=green]
+hub: L_prio 1 2 [zone=priority color=cyan max_drones=1]
+hub: L_norm 1 0 [zone=normal color=blue max_drones=2]
+hub: L_restr 1 -2 [zone=restricted color=red max_drones=2]
+hub: R_prio 2 2 [zone=priority color=cyan max_drones=1]
+hub: R_norm 2 0 [zone=normal color=blue max_drones=2]
+hub: R_restr 2 -2 [zone=restricted color=red max_drones=2]
+end_hub: goal 3 0 [color=green]
+
+# Start connections to Left partition
+connection: start-L_prio [max_link_capacity=2]
+connection: start-L_norm [max_link_capacity=2]
+connection: start-L_restr [max_link_capacity=2]
+
+# Bipartite cross-edges between Left and Right
+connection: L_prio-R_prio [max_link_capacity=1]
+connection: L_prio-R_norm [max_link_capacity=1]
+connection: L_prio-R_restr [max_link_capacity=1]
+
+connection: L_norm-R_prio [max_link_capacity=1]
+connection: L_norm-R_norm [max_link_capacity=2]
+connection: L_norm-R_restr [max_link_capacity=1]
+
+connection: L_restr-R_prio [max_link_capacity=1]
+connection: L_restr-R_norm [max_link_capacity=1]
+connection: L_restr-R_restr [max_link_capacity=1]
+
+# Right partition to goal
+connection: R_prio-goal [max_link_capacity=2]
+connection: R_norm-goal [max_link_capacity=2]
+connection: R_restr-goal [max_link_capacity=2]

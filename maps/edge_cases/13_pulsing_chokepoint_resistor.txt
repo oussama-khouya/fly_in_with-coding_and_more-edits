@@ -1,0 +1,29 @@
+# Edge Case 13: Pulsing Chokepoint Resistor
+# Tests a Wheatstone-bridge lattice network with diagonal interconnects.
+# Two high-capacity feeder hubs (top_in, bot_in) connect directly to output hubs (top_out, bot_out)
+# and also cross-connect diagonally with strict capacity-1 bridge links.
+# Tests concurrent multi-path load distribution and diagonal capacity enforcement.
+
+nb_drones: 8
+
+start_hub: start 0 0 [color=green]
+hub: top_in 1 1 [zone=normal color=blue max_drones=3]
+hub: bot_in 1 -1 [zone=normal color=cyan max_drones=3]
+hub: top_out 2 1 [zone=normal color=blue max_drones=3]
+hub: bot_out 2 -1 [zone=normal color=cyan max_drones=3]
+end_hub: goal 3 0 [color=green]
+
+# Inflow connections
+connection: start-top_in [max_link_capacity=2]
+connection: start-bot_in [max_link_capacity=2]
+
+# Bridge cross-connections
+connection: top_in-bot_in [max_link_capacity=1]
+connection: top_in-top_out [max_link_capacity=2]
+connection: bot_in-bot_out [max_link_capacity=2]
+connection: top_in-bot_out [max_link_capacity=1]
+connection: bot_in-top_out [max_link_capacity=1]
+
+# Outflow connections
+connection: top_out-goal [max_link_capacity=2]
+connection: bot_out-goal [max_link_capacity=2]

@@ -1,0 +1,47 @@
+# Edge Case 17: Fifty Drone Tsunami
+# Ultra high-throughput stress test with 50 drones (nb_drones: 50).
+# Four parallel high-concurrency corridors (Alpha, Beta, Gamma, Delta) connect start to goal.
+# Each corridor has intermediate capacity of max_drones=4 and max_link_capacity=4.
+# Tests sustained high-volume pipelining, multi-drone wave management, and queue stability with 50 drones.
+
+nb_drones: 50
+
+start_hub: start 0 0 [color=green]
+
+# Alpha Corridor (Top)
+hub: a1 1 3 [zone=normal color=blue max_drones=4]
+hub: a2 2 3 [zone=normal color=blue max_drones=4]
+
+# Beta Corridor (Mid-Top)
+hub: b1 1 1 [zone=normal color=cyan max_drones=4]
+hub: b2 2 1 [zone=normal color=cyan max_drones=4]
+
+# Gamma Corridor (Mid-Bottom)
+hub: c1 1 -1 [zone=normal color=yellow max_drones=4]
+hub: c2 2 -1 [zone=normal color=yellow max_drones=4]
+
+# Delta Corridor (Bottom)
+hub: d1 1 -3 [zone=normal color=magenta max_drones=4]
+hub: d2 2 -3 [zone=normal color=magenta max_drones=4]
+
+end_hub: goal 3 0 [color=green]
+
+# Alpha connections
+connection: start-a1 [max_link_capacity=4]
+connection: a1-a2 [max_link_capacity=4]
+connection: a2-goal [max_link_capacity=4]
+
+# Beta connections
+connection: start-b1 [max_link_capacity=4]
+connection: b1-b2 [max_link_capacity=4]
+connection: b2-goal [max_link_capacity=4]
+
+# Gamma connections
+connection: start-c1 [max_link_capacity=4]
+connection: c1-c2 [max_link_capacity=4]
+connection: c2-goal [max_link_capacity=4]
+
+# Delta connections
+connection: start-d1 [max_link_capacity=4]
+connection: d1-d2 [max_link_capacity=4]
+connection: d2-goal [max_link_capacity=4]

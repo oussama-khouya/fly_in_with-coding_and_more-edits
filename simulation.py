@@ -1,6 +1,6 @@
 """Simulation: runs the turn-by-turn drone movement."""
 from typing import Dict, List, Set, Tuple
-from models import Drone
+from models import Drone, SimulationError
 from graph import Graph
 
 
@@ -23,6 +23,13 @@ class Simulation:
         while not all(d.delivered for d in self.drones):
             self.turn += 1
             movements = self._do_turn()
+            # Added: Deadlock detection. If no drone moved and no drone is
+            # currently in flight toward a restricted zone, the simulation
+            # cannot make further progress. Raise SimulationError.
+            if not movements and not any(d.in_traveling for d in self.drones):
+                err = ("Error: Deadlock detected, drones cannot make "
+                       "further progress")
+                raise SimulationError(err)
             if movements:
                 self.output_lines.append(" ".join(movements))
 
@@ -76,57 +83,78 @@ class Simulation:
         # their goal small first the closest to goal first
         active.sort(key=lambda d: len(d.path) - d.path_index)
 
-        for drone in active:
-            next_zone_name = drone.path[drone.path_index + 1]
-            next_zone = self.graph.get_zone(next_zone_name)
-            conn = self.graph.get_connection(drone.position, next_zone_name)
-            conn_key = conn.key()
-
-            # Check connection capacity conn_usage{(zone1, zone2): number of
-            # drones using this connection in this turn}
-            if conn_usage.get(conn_key, 0) >= conn.max_link_capacity:
-                continue
-
-            # Check destination zone capacity
-            # zone_occ{zone_name: number of drones in this zone}
-            dest_occ = zone_occ.get(next_zone_name, 0)
-            is_unlimited_start_or_end = next_zone.is_start or next_zone.is_end
-            if (
-                not is_unlimited_start_or_end
-                and dest_occ >= next_zone.max_drones
-            ):
-                continue
-
-            if next_zone.zone_type == "restricted":
-                # Restricted: takes 2 turns — enter connection this turn,
-                # arrive next turn
-                conn_name = f"{drone.position}-{next_zone_name}"
-                # The drone is leaving its current zone. Subtract 1 from that
-                # zone's occupancy. This frees up a spot
-                zone_occ[drone.position] = (
-                    zone_occ.get(drone.position, 0) - 1
+        # Added: Multi-pass simultaneous movement resolution.
+        # When drones share the same distance-to-goal priority, a leading drone
+        # moving out of a zone vacates capacity, allowing trailing drones to
+        # advance into the newly freed spot within the exact same turn.
+        while True:
+            moved_in_pass = False
+            for drone in active:
+                if drone.id in moved_this_turn:
+                    continue
+                next_zone_name = drone.path[drone.path_index + 1]
+                next_zone = self.graph.get_zone(next_zone_name)
+                conn = self.graph.get_connection(
+                    drone.position, next_zone_name
                 )
-                drone.in_traveling = True
-                drone.travel_dest = next_zone_name
-                # between two zones. Empty string means "not in a zone".
-                drone.position = ""
-                conn_usage[conn_key] = conn_usage.get(conn_key, 0) + 1
-                # "D1-A-restricted_zone"
-                movements.append(f"D{drone.id}-{conn_name}")
-            else:
-                # Normal or priority: move in one turn
-                # Leave the current zone. Subtract 1 from occupancy.
-                zone_occ[drone.position] = (
-                    zone_occ.get(drone.position, 0) - 1
+                conn_key = conn.key()
+
+                # Check connection capacity conn_usage{(zone1, zone2): number
+                # of drones using this connection in this turn}
+                if conn_usage.get(conn_key, 0) >= conn.max_link_capacity:
+                    continue
+
+                # Check destination zone capacity
+                # zone_occ{zone_name: number of drones in this zone}
+                dest_occ = zone_occ.get(next_zone_name, 0)
+                is_unlimited_start_or_end = (
+                    next_zone.is_start or next_zone.is_end
                 )
-                # Move to the next zone. Add 1 to occupancy.
-                drone.position = next_zone_name
-                drone.path_index += 1
-                zone_occ[next_zone_name] = dest_occ + 1
-                conn_usage[conn_key] = conn_usage.get(conn_key, 0) + 1
-                if next_zone_name == self.graph.end:
-                    drone.delivered = True
-                    # "D1-waypoint1"
-                movements.append(f"D{drone.id}-{next_zone_name}")
+                if (
+                    not is_unlimited_start_or_end
+                    and dest_occ >= next_zone.max_drones
+                ):
+                    continue
+
+                if next_zone.zone_type == "restricted":
+                    # Restricted: takes 2 turns — enter connection this turn,
+                    # arrive next turn
+                    conn_name = f"{drone.position}-{next_zone_name}"
+                    # The drone is leaving its current zone. Subtract 1 from
+                    # that zone's occupancy. This frees up a spot
+                    zone_occ[drone.position] = (
+                        zone_occ.get(drone.position, 0) - 1
+                    )
+                    drone.in_traveling = True
+                    drone.travel_dest = next_zone_name
+                    # between two zones. Empty string means "not in a zone".
+                    drone.position = ""
+                    conn_usage[conn_key] = conn_usage.get(conn_key, 0) + 1
+                    # Reserve destination zone occupancy so it is not exceeded
+                    zone_occ[next_zone_name] = dest_occ + 1
+                    # "D1-A-restricted_zone"
+                    movements.append(f"D{drone.id}-{conn_name}")
+                    moved_this_turn.add(drone.id)
+                    moved_in_pass = True
+                else:
+                    # Normal or priority: move in one turn
+                    # Leave the current zone. Subtract 1 from occupancy.
+                    zone_occ[drone.position] = (
+                        zone_occ.get(drone.position, 0) - 1
+                    )
+                    # Move to the next zone. Add 1 to occupancy.
+                    drone.position = next_zone_name
+                    drone.path_index += 1
+                    zone_occ[next_zone_name] = dest_occ + 1
+                    conn_usage[conn_key] = conn_usage.get(conn_key, 0) + 1
+                    if next_zone_name == self.graph.end:
+                        drone.delivered = True
+                        # "D1-waypoint1"
+                    movements.append(f"D{drone.id}-{next_zone_name}")
+                    moved_this_turn.add(drone.id)
+                    moved_in_pass = True
+
+            if not moved_in_pass:
+                break
 
         return movements

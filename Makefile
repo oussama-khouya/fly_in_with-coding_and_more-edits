@@ -24,4 +24,10 @@ lint-strict:
 	flake8 .
 	mypy . --strict
 
+test:
+	python3 test_simulation_and_algo.py
+	python3 test_edge_cases_comprehensive.py
+	python3 test_custom_edge_cases.py
+	python3 verify_all_subject_rules.py
+
 .PHONY: all run install debug clean lint lint-strict test

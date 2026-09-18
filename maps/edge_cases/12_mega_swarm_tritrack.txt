@@ -1,0 +1,46 @@
+# Edge Case 12: Mega Swarm Tri-Track
+# Tests high-volume fleet distribution and pipelining with 30 drones (nb_drones: 30).
+# Three parallel multi-lane tracks connect start to goal:
+# Track North: Normal zone bulk corridor (max_drones=3, max_link_capacity=3)
+# Track Center: Priority zone express lane (zone=priority, max_drones=2, max_link_capacity=2)
+# Track South: Normal zone bulk corridor (max_drones=3, max_link_capacity=3)
+# Tests pathfinder edge-penalization balancing and high concurrency execution across 3 concurrent tracks.
+
+nb_drones: 30
+
+start_hub: start 0 0 [color=green]
+
+# North Track (Normal, Capacity 3)
+hub: n1 1 2 [zone=normal color=blue max_drones=3]
+hub: n2 2 2 [zone=normal color=blue max_drones=3]
+hub: n3 3 2 [zone=normal color=blue max_drones=3]
+
+# Center Track (Priority, Capacity 2)
+hub: c1 1 0 [zone=priority color=cyan max_drones=2]
+hub: c2 2 0 [zone=priority color=cyan max_drones=2]
+hub: c3 3 0 [zone=priority color=cyan max_drones=2]
+
+# South Track (Normal, Capacity 3)
+hub: s1 1 -2 [zone=normal color=yellow max_drones=3]
+hub: s2 2 -2 [zone=normal color=yellow max_drones=3]
+hub: s3 3 -2 [zone=normal color=yellow max_drones=3]
+
+end_hub: goal 4 0 [color=green]
+
+# North connections
+connection: start-n1 [max_link_capacity=3]
+connection: n1-n2 [max_link_capacity=3]
+connection: n2-n3 [max_link_capacity=3]
+connection: n3-goal [max_link_capacity=3]
+
+# Center connections
+connection: start-c1 [max_link_capacity=2]
+connection: c1-c2 [max_link_capacity=2]
+connection: c2-c3 [max_link_capacity=2]
+connection: c3-goal [max_link_capacity=2]
+
+# South connections
+connection: start-s1 [max_link_capacity=3]
+connection: s1-s2 [max_link_capacity=3]
+connection: s2-s3 [max_link_capacity=3]
+connection: s3-goal [max_link_capacity=3]

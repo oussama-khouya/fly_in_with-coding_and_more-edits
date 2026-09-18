@@ -1,0 +1,36 @@
+# Edge Case 9: Zigzag Dead End Maze
+# Tests pathfinder resistance to misleading branches and dead-end cul-de-sacs.
+# The graph contains tempting branch corridors (bait1 -> dead_end1, bait2 -> dead_end2)
+# that do not lead to the goal.
+# Drones must navigate the correct winding zigzag path (z1 -> z2 -> z3 -> z4) to goal.
+
+nb_drones: 4
+
+start_hub: start 0 0 [color=green]
+
+# Dead-end branches
+hub: bait1 0 1 [zone=normal color=grey max_drones=3]
+hub: dead_end1 0 2 [zone=normal color=grey max_drones=3]
+hub: bait2 0 -1 [zone=normal color=grey max_drones=3]
+hub: dead_end2 0 -2 [zone=normal color=grey max_drones=3]
+
+# Valid zigzag spine
+hub: z1 1 1 [zone=normal color=blue max_drones=2]
+hub: z2 2 -1 [zone=normal color=blue max_drones=2]
+hub: z3 3 1 [zone=normal color=blue max_drones=2]
+hub: z4 4 -1 [zone=normal color=blue max_drones=2]
+
+end_hub: goal 5 0 [color=green]
+
+# Dead ends
+connection: start-bait1
+connection: bait1-dead_end1
+connection: start-bait2
+connection: bait2-dead_end2
+
+# Active zigzag route
+connection: start-z1 [max_link_capacity=2]
+connection: z1-z2 [max_link_capacity=2]
+connection: z2-z3 [max_link_capacity=2]
+connection: z3-z4 [max_link_capacity=2]
+connection: z4-goal [max_link_capacity=2]

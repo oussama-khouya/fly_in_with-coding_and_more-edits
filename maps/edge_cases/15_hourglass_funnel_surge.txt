@@ -1,0 +1,45 @@
+# Edge Case 15: Hourglass Funnel Surge
+# Tests an hourglass funnel topology: wide ingress chamber -> single restricted waist -> wide egress chamber.
+# Drones launch from start into 3 upper staging zones (u1, u2, u3).
+# All 3 staging zones funnel into a single-drone restricted bottleneck 'waist' (zone=restricted, max_drones=1).
+# Drones exiting the waist fan out into 3 lower dispersal zones (l1, l2, l3) before reaching goal.
+# Tests extreme funneling into and out of a single-occupancy restricted singularity.
+
+nb_drones: 6
+
+start_hub: start 0 0 [color=green]
+
+# Upper staging chamber
+hub: u1 1 2 [zone=normal color=blue max_drones=2]
+hub: u2 1 0 [zone=normal color=blue max_drones=2]
+hub: u3 1 -2 [zone=normal color=blue max_drones=2]
+
+# Restricted bottleneck waist
+hub: waist 2 0 [zone=restricted color=red max_drones=1]
+
+# Lower dispersal chamber
+hub: l1 3 2 [zone=normal color=cyan max_drones=2]
+hub: l2 3 0 [zone=normal color=cyan max_drones=2]
+hub: l3 3 -2 [zone=normal color=cyan max_drones=2]
+
+end_hub: goal 4 0 [color=green]
+
+# Ingress into upper chamber
+connection: start-u1 [max_link_capacity=2]
+connection: start-u2 [max_link_capacity=2]
+connection: start-u3 [max_link_capacity=2]
+
+# Convergence into restricted waist
+connection: u1-waist [max_link_capacity=1]
+connection: u2-waist [max_link_capacity=1]
+connection: u3-waist [max_link_capacity=1]
+
+# Divergence from waist into lower chamber
+connection: waist-l1 [max_link_capacity=1]
+connection: waist-l2 [max_link_capacity=1]
+connection: waist-l3 [max_link_capacity=1]
+
+# Final egress to goal
+connection: l1-goal [max_link_capacity=2]
+connection: l2-goal [max_link_capacity=2]
+connection: l3-goal [max_link_capacity=2]

@@ -1,0 +1,22 @@
+# Edge Case 11: Restricted Island Hop
+# Tests heterogeneous zone-type transitions across an alternating chain of zones:
+# normal -> restricted -> priority -> restricted -> normal.
+# Tests switching movement mechanics between 2-turn restricted entries and 1-turn priority/normal hops,
+# verifying that occupancy reservations and releases remain in sync across mixed zone types.
+
+nb_drones: 5
+
+start_hub: start 0 0 [color=green]
+hub: bay 1 0 [zone=normal color=blue max_drones=2]
+hub: reef 2 0 [zone=restricted color=red max_drones=1]
+hub: atoll 3 0 [zone=priority color=cyan max_drones=1]
+hub: shoal 4 0 [zone=restricted color=red max_drones=1]
+hub: harbor 5 0 [zone=normal color=blue max_drones=2]
+end_hub: goal 6 0 [color=green]
+
+connection: start-bay [max_link_capacity=2]
+connection: bay-reef [max_link_capacity=1]
+connection: reef-atoll [max_link_capacity=1]
+connection: atoll-shoal [max_link_capacity=1]
+connection: shoal-harbor [max_link_capacity=1]
+connection: harbor-goal [max_link_capacity=2]

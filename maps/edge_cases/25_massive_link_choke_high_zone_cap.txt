@@ -1,0 +1,18 @@
+# Edge Case 25: Massive Link Choke with High Zone Capacity
+# Tests severe asymmetry between zone capacity (max_drones=10) and link capacity (max_link_capacity=1).
+# Even though receiving chambers have plenty of capacity, drones MUST be strictly throttled to 1 drone per turn
+# per connection. Verifies that link capacity is an independent binding constraint.
+
+nb_drones: 8
+
+start_hub: start 0 0 [color=green]
+hub: hall_alpha 1 0 [zone=normal color=blue max_drones=10]
+hub: hall_beta 2 0 [zone=normal color=cyan max_drones=10]
+hub: hall_gamma 3 0 [zone=normal color=magenta max_drones=10]
+end_hub: goal 4 0 [color=green]
+
+# Every connection strictly limited to 1 drone at a time
+connection: start-hall_alpha [max_link_capacity=1]
+connection: hall_alpha-hall_beta [max_link_capacity=1]
+connection: hall_beta-hall_gamma [max_link_capacity=1]
+connection: hall_gamma-goal [max_link_capacity=1]

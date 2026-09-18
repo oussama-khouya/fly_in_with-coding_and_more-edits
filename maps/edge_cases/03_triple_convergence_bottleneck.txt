@@ -1,0 +1,28 @@
+# Edge Case 3: Triple Convergence Bottleneck
+# Tests multi-lane confluence into a single restricted bottleneck hub.
+# Three parallel feeder channels (North, Center, South) of equal length branch out from start.
+# All three channels converge at 'junction', which is a restricted zone with max_drones=1.
+# Drones must serialize their entry into the junction one by one without exceeding the single occupancy limit,
+# while holding back remaining traffic safely across the three feeder zones.
+
+nb_drones: 6
+
+start_hub: start 0 0 [color=green]
+hub: north_gate 1 2 [zone=normal color=blue max_drones=2]
+hub: center_gate 1 0 [zone=normal color=cyan max_drones=2]
+hub: south_gate 1 -2 [zone=normal color=yellow max_drones=2]
+hub: junction 2 0 [zone=restricted color=red max_drones=1]
+end_hub: goal 3 0 [color=green]
+
+# Feeder branches from start
+connection: start-north_gate [max_link_capacity=2]
+connection: start-center_gate [max_link_capacity=2]
+connection: start-south_gate [max_link_capacity=2]
+
+# Convergence into the restricted chokepoint
+connection: north_gate-junction [max_link_capacity=1]
+connection: center_gate-junction [max_link_capacity=1]
+connection: south_gate-junction [max_link_capacity=1]
+
+# Final release to goal
+connection: junction-goal [max_link_capacity=1]

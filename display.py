@@ -22,14 +22,26 @@ class Display:
     def __init__(self, graph: Graph) -> None:
         self.graph = graph
 
+    # Added: Fallback for arbitrary single-word colors as mandated by fly.pdf
+    # (Page 11: "Accepted values for color are any valid single-word strings...
+    # There is no fixed list of allowed colors.")
+    def get_color_code(self, color_name: str) -> str:
+        """Get ANSI color escape code, falling back to 256-color hash."""
+        if color_name in COLORS:
+            return COLORS[color_name]
+        # Deterministic 256-color ANSI code for any arbitrary single-word color
+        code = 16 + (abs(hash(color_name)) % 216)
+        return f"\033[38;5;{code}m"
+
     def colorize_line(self, line: str) -> str:
         """Apply zone color to each move token in the turn line."""
         colored_moves: List[str] = []
         for move in line.split():
             dest = move.split("-")[-1]
             zone = self.graph.zones.get(dest)
-            if zone and zone.color in COLORS:
-                colored_moves.append(f"{COLORS[zone.color]}{move}{RESET}")
+            if zone and zone.color:
+                color_code = self.get_color_code(zone.color)
+                colored_moves.append(f"{color_code}{move}{RESET}")
             else:
                 colored_moves.append(move)
         return " ".join(colored_moves)
