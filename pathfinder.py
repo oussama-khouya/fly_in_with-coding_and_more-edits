@@ -42,13 +42,11 @@ class Pathfinder:
         # are allowed detours up to min_len + 2 so alternative high-capacity
         # routes are not prematurely choked off.
         min_len = min(len(p) for p in paths)
-        if min_len >= 15:
-            max_allowed = min_len
-        elif num_drones > 15:
-            max_allowed = min_len + 2
-        else:
-            max_allowed = min_len + 1
+        max_allowed = min_len if min_len >= 15 else min_len + 1
         filtered = [p for p in paths if len(p) <= max_allowed]
+
+        if len(filtered) < len(paths):
+            filtered = paths  # don't drop a drone's only path just because it's longer
 
         return filtered
 

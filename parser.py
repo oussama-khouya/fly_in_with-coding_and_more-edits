@@ -204,15 +204,16 @@ class Parser:
             raise ParserError(err)
 
         # we start with as default zone
+        #if there is no metadata
         zone_type = "normal"
         color = ""
         max_drones = 1
         seen_keys: Set[str] = set()
 
         if metadata_str:
-            if not metadata_str.strip():
-                err = f"Error on line {line_num}: Empty metadata block"
-                raise ParserError(err)
+            #if not metadata_str.strip():
+                #err = f"Error on line {line_num}: Empty metadata block"
+                #raise ParserError(err)
             if " =" in metadata_str or "= " in metadata_str:
                 err = (f"Error on line {line_num}: "
                        f"Spaces around '=' are not allowed in metadata "
@@ -246,6 +247,13 @@ class Parser:
                         err = (f"Error on line {line_num}: "
                                f"Invalid zone type '{value}'")
                         raise ParserError(err)
+                    if value == "blocked" and is_start :
+                        err = (f"Error on line {line_num}: "
+                                f"start/end zone can't be blocked")
+                        raise ParserError(err)
+
+
+                        
                     zone_type = value
                 elif key == "color":
                     if not value.isalpha():
@@ -255,25 +263,26 @@ class Parser:
                         raise ParserError(err)
                     color = value.lower()
                 elif key == "max_drones":
+                    if is_start or is_end:
+                        continue
                     try:
                         parsed_max = int(value)
                     except ValueError:
                         err = (f"Error on line {line_num}: "
                                f"max_drones must be a positive integer")
                         raise ParserError(err)
-                    if not (is_start or is_end):
-                        if parsed_max <= 0:
-                            err = (f"Error on line {line_num}: "
+                    if parsed_max <= 0:
+                        err = (f"Error on line {line_num}: "
                                    f"max_drones must be a positive integer")
-                            raise ParserError(err)
-                        max_drones = parsed_max
+                        raise ParserError(err)
+                    max_drones = parsed_max
                 else:
                     err = (f"Error on line {line_num}: "
                            f"Unknown metadata key '{key}'")
                     raise ParserError(err)
 
         if is_start or is_end:
-            max_drones = 999999999999999999999999
+            max_drones = 999999999999999999999999999999999999
 
         return Zone(
             name=zone_name,
@@ -348,9 +357,9 @@ class Parser:
         seen_keys: Set[str] = set()
 
         if metadata_str:
-            if not metadata_str.strip():
-                err = f"Error on line {line_num}: Empty metadata block"
-                raise ParserError(err)
+            #if not metadata_str.strip():
+                #err = f"Error on line {line_num}: Empty metadata block"
+                #raise ParserError(err)
             if " =" in metadata_str or "= " in metadata_str:
                 err = (f"Error on line {line_num}: "
                        f"Spaces around '=' are not allowed in metadata")
